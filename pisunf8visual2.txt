@@ -296,7 +296,6 @@ document.addEventListener('click', function(e) {
     </header>
 
     <div class="tab-bar">
-<button class="tab-btn" id="main-tab-manage" onclick="switchMainTab('manage')">⚙️ Управление & ИИ Чат</button>
         <button class="tab-btn active" id="main-tab-hub" onclick="switchMainTab('hub')">🏢 База клуба</button>
         <button class="tab-btn" id="main-tab-market" onclick="switchMainTab('market')">🛒 Трансферы</button>
         <button class="tab-btn" id="main-tab-hltv" onclick="switchMainTab('hltv')">📊 Рейтинг HLTV</button>
@@ -472,29 +471,41 @@ document.addEventListener('click', function(e) {
 
 <script>
 const LOGOS = {
-    NAVI: "Navi-Logo.png", FaZe: "FaZe.png", Spirit: "Team_Spirit.png", G2: "G2.png", 
-    Vitality: "Team_Vitality.png", MOUZ: "mouz.png", VP: "Virtus.pro.png", Falcons: "Falcons.png", 
-    Furia: "Furia.png", Aurora: "Aur.png", Paravision: "PARIVISION.png", Mongolz: "Mongolz.png", 
-    Liquid: "Liquid.png", Complexity: "Complexity.png"
+    Vitality: "Team_Vitality.png", NAVI: "Navi-Logo.png", Spirit: "Team_Spirit.png",
+    Paravision: "PARIVISION.png", FUT: "FUT.png", Falcons: "Falcons.png",
+    Furia: "Furia.png", Aurora: "Aur.png", Mongolz: "Mongolz.png",
+    Astralis: "Astralis.png", MOUZ: "mouz.png", G2: "G2.png",
+    GL: "GamerLegion.png", Legacy: "Legacy.png",
+    FaZe: "FaZe.png", VP: "Virtus.pro.png", Liquid: "Liquid.png", Complexity: "Complexity.png" // эти оставим в кэше
 };
 
 const AVATARS = {
-    b1t: "b1t.png", jl: "jL.png", im: "iM.png", w0nderful: "w0nderful.png", aleksib: "Aleksib.png",
-    ropz: "ropz.png", broky: "BROKY1.png", frozen: "frozen.png", rain: "rain.png", karrigan: "karrigan.png",
-    donk: "donk.png", sh1ro: "sh1ro.png", chopper: "Chopper.png", magixx: "Magixx.png", zont1x: "zont1x.png",
-    m0nesy: "m0NESY.png", niko: "NiKo.png", hunter: "hunter.png", snax: "Snax.png", malbsmd: "malsbsmd.png",
-    s1mple: "S1mple.png", dupreeh: "dupreeh.png", magisk: "magisk.png", maden: "maden.png", snappi: "snappi.png",
-    fallen: "fallen.png", kscerato: "kscerato.png", yuurih: "yuurih.png", chelo: "chelo.png", skullz: "skullz.png",
-    lack1: "lack1.png", kensi: "kensi.png", norwi: "norwi.png", deko: "deko.png", r3salt: "r3salt.png",
-    jerry: "jerry.png", artfr0st: "artfrost.png", qikert: "qikert.png", patsi: "patsi.png", fl4mus: "flamus.png",
-    blitz: "blitz.png", techno4k: "techno.png", 910: "910.png", senzu: "senzu.png", mzinho: "mzinho.png",
-    jame: "kame.png", fl1t: "fl1t.png", fame: "fame.png", n0rb3r7: "n0rb3r7.png", electronic: "elic.png",
-    torzsi: "torzsi.png", xertion: "xertion.png", siuhy: "siuhy.png", jimpphat: "jimpphat.png", brollan: "brollan.png",
-    twistzz: "twistzz.png", naf: "naf.png", yekindar: "yekindar.png", ultimate: "ultimate.png", jks: "jks.png",
-    elige: "elige.png", jt: "jt.png", grim: "grim.png", floppy: "floppy.png", hallzerk: "hallzerk.png",
-    zywoo: "Zywoo.png", apex: "apEX.png", spinx: "Spinx.png", flamez: "flamez.png", mezii: "mezil.png",
-    perfecto: "perfecto.png", nafany: "nafany.png", degster: "degster.png", smooya: "smooya.png", aunkere: "aunkere.png", fear: "fear.png",
-    default: "https://liquipedia.net/commons/images/a/a2/No_avatar.png"
+    "b1t": "b1t.png", "jl": "jL.png", "im": "iM.png", "w0nderful": "w0nderful.png", "aleksib": "Aleksib.png",
+    "ropz": "ropz.png", "broky": "BROKY1.png", "frozen": "frozen.png", "rain": "rain.png", "karrigan": "karrigan.png",
+    "donk": "donk.png", "sh1ro": "sh1ro.png", "chopper": "Chopper.png", "magixx": "Magixx.png", "zont1x": "zont1x.png",
+    "m0nesy": "m0NESY.png", "niko": "NiKo.png", "hunter": "hunter.png", "snax": "Snax.png", "malbsmd": "malsbsmd.png",
+    "s1mple": "S1mple.png", "dupreeh": "dupreeh.png", "magisk": "magisk.png", "maden": "maden.png", "snappi": "snappi.png",
+    "fallen": "fallen.png", "kscerato": "kscerato.png", "yuurih": "yuurih.png", "chelo": "chelo.png", "skullz": "skullz.png",
+    "lack1": "lack1.png", "kensi": "kensi.png", "norwi": "norwi.png", "deko": "deko.png", "r3salt": "r3salt.png",
+    "jerry": "jerry.png", "artfr0st": "artfrost.png", "qikert": "qikert.png", "patsi": "patsi.png", "fl4mus": "flamus.png",
+    "blitz": "blitz.png", "techno4k": "techno.png", "910": "910.png", "senzu": "senzu.png", "mzinho": "mzinho.png",
+    "jame": "kame.png", "fl1t": "fl1t.png", "fame": "fame.png", "n0rb3r7": "n0rb3r7.png", "electronic": "elic.png",
+    "torzsi": "torzsi.png", "xertion": "xertion.png", "siuhy": "siuhy.png", "jimpphat": "jimpphat.png", "brollan": "brollan.png",
+    "twistzz": "twistzz.png", "naf": "naf.png", "yekindar": "yekindar.png", "ultimate": "ultimate.png", "jks": "jks.png",
+    "elige": "elige.png", "jt": "jt.png", "grim": "grim.png", "floppy": "floppy.png", "hallzerk": "hallzerk.png",
+    "zywoo": "Zywoo.png", "apex": "apEX.png", "spinx": "Spinx.png", "flamez": "flamez.png", "mezii": "mezil.png",
+    "perfecto": "perfecto.png", "nafany": "nafany.png", "degster": "degster.png", "smooya": "smooya.png", "aunkere": "aunkere.png",
+    "fear": "fear.png", "makazze": "makazze.png", "tN1R": "tN1r.png", "BELCHONOKK": "belchonokk.png", "xiELO": "xielo.png", 
+    "nota": "nota.png", "zweih": "zweih.png", "kyousuke": "kyousuke.png", "molodoy": "molodoy.png", "soulfly": "soulfly.png", 
+    "XANTARES": "xantares.png", "woxic": "woxic.png", "MAJ3R": "maj3r.png", "Wicadia": "wicadia.png", "HeavyGod": "heavygod.png", 
+    "hades": "hades.png", "imoRR": "imorr.png", "xfl0ud": "xfl0ud.png", "jottAAA": "jottaaa.png", "ztr": "ztr.png", 
+    "REZ": "rez.png", "saadzin": "saadzin.png", "lux": "lux.png", "n1ssim": "n1ssim.png",
+
+    // Дубликаты в нижнем регистре на случай несовпадения шрифтов в массивах команд
+    "tn1r": "tN1r.png", "belchonokk": "belchonokk.png", "xielo": "xielo.png", "heavygod": "heavygod.png", 
+    "xantares": "xantares.png", "maj3r": "maj3r.png", "wicadia": "wicadia.png", "imorr": "imorr.png", 
+    "jottaaa": "jottaaa.png", "rez": "rez.png", "malbsmd": "malsbsmd.png", "techno": "techno.png",
+    "default": "https://liquipedia.net/commons/images/a/a2/No_avatar.png"
 };
 
 const MAP_IMAGES = {
@@ -510,112 +521,111 @@ function getPlayerAvatar(name) {
 
 // ГЛОБАЛЬНЫЕ ДАННЫЕ ОРГАНИЗАЦИЙ И РОСТЕРОВ (ВСЕ 14 КОМАНД)
 let teamsData = [
-    { id: "navi", name: "Natus Vincere", logo: LOGOS.NAVI, skill: 89, form: 95, points: 940, roster: [
-        { name: "Aleksib", skill: 84, moral: 90, role: "IGL", matches: 42, kd: "1.02", salary: 5000 },
-        { name: "b1t", skill: 89, moral: 85, role: "Rifler", matches: 120, kd: "1.14", salary: 6500 },
-        { name: "jL", skill: 91, moral: 95, role: "Rifler", matches: 45, kd: "1.18", salary: 7000 },
-        { name: "iM", skill: 86, moral: 80, role: "Rifler", matches: 45, kd: "1.08", salary: 4800 },
-        { name: "w0nderful", skill: 90, moral: 88, role: "AWPer", matches: 40, kd: "1.21", salary: 6000 }
+    { id: "vitality", name: "Team Vitality", logo: LOGOS.Vitality, skill: 93, form: 96, points: 1000, roster: [
+        { name: "apEX", skill: 85, moral: 92, role: "IGL", matches: 215, kd: "0.98", salary: 6500 },
+        { name: "ZywOo", skill: 97, moral: 95, role: "AWPer", matches: 190, kd: "1.32", salary: 11500 },
+        { name: "ropz", skill: 91, moral: 90, role: "Lurker", matches: 180, kd: "1.17", salary: 9000 },
+        { name: "flameZ", skill: 89, moral: 90, role: "Entry", matches: 110, kd: "1.12", salary: 5800 },
+        { name: "mezii", skill: 84, moral: 88, role: "Support", matches: 95, kd: "1.01", salary: 4900 }
     ]},
-    { id: "spirit", name: "Team Spirit", logo: LOGOS.Spirit, skill: 91, form: 92, points: 890, roster: [
-        { name: "chopper", skill: 82, moral: 88, role: "IGL", matches: 90, kd: "0.98", salary: 4500 },
-        { name: "donk", skill: 97, moral: 90, role: "Rifler", matches: 60, kd: "1.34", salary: 8500 },
-        { name: "sh1ro", skill: 93, moral: 85, role: "AWPer", matches: 85, kd: "1.26", salary: 7500 },
-        { name: "zont1x", skill: 86, moral: 82, role: "Rifler", matches: 55, kd: "1.06", salary: 4200 },
-        { name: "magixx", skill: 83, moral: 87, role: "Anchor", matches: 95, kd: "1.01", salary: 4000 }
+    { id: "navi", name: "Natus Vincere", logo: LOGOS.NAVI, skill: 91, form: 94, points: 880, roster: [
+        { name: "Aleksib", skill: 86, moral: 95, role: "IGL", matches: 75, kd: "1.04", salary: 7500 },
+        { name: "b1t", skill: 91, moral: 92, role: "Rifler", matches: 165, kd: "1.16", salary: 8500 },
+        { name: "w0nderful", skill: 92, moral: 93, role: "AWPer", matches: 80, kd: "1.24", salary: 8000 },
+        { name: "iM", skill: 88, moral: 90, role: "Rifler", matches: 85, kd: "1.10", salary: 6800 },
+        { name: "makazze", skill: 84, moral: 88, role: "Rifler", matches: 45, kd: "1.07", salary: 4000 }
     ]},
-    { id: "faze", name: "FaZe Clan", logo: LOGOS.FaZe, skill: 88, form: 85, points: 720, roster: [
-        { name: "karrigan", skill: 81, moral: 95, role: "IGL", matches: 210, kd: "0.91", salary: 5500 },
-        { name: "ropz", skill: 92, moral: 84, role: "Lurker", matches: 140, kd: "1.20", salary: 7200 },
-        { name: "broky", skill: 90, moral: 86, role: "AWPer", matches: 135, kd: "1.18", salary: 6800 },
-        { name: "frozen", skill: 89, moral: 88, role: "Rifler", matches: 50, kd: "1.15", salary: 6000 },
-        { name: "rain", skill: 85, moral: 90, role: "Entry", matches: 220, kd: "1.04", salary: 5000 }
+    { id: "spirit", name: "Team Spirit", logo: LOGOS.Spirit, skill: 91, form: 91, points: 795, roster: [
+        { name: "chopper", skill: 83, moral: 90, role: "IGL", matches: 125, kd: "0.99", salary: 5500 },
+        { name: "donk", skill: 97, moral: 94, role: "Rifler", matches: 100, kd: "1.35", salary: 11500 },
+        { name: "sh1ro", skill: 94, moral: 90, role: "AWPer", matches: 120, kd: "1.27", salary: 9500 },
+        { name: "zont1x", skill: 87, moral: 86, role: "Rifler", matches: 95, kd: "1.07", salary: 5200 },
+        { name: "magixx", skill: 84, moral: 91, role: "Anchor", matches: 135, kd: "1.01", salary: 4800 }
     ]},
-    { id: "g2", name: "G2 Esports", logo: LOGOS.G2, skill: 90, form: 89, points: 810, roster: [
-        { name: "Snax", skill: 82, moral: 82, role: "IGL", matches: 30, kd: "0.96", salary: 4000 },
-        { name: "m0NESY", skill: 96, moral: 92, role: "AWPer", matches: 90, kd: "1.31", salary: 8000 },
-        { name: "NiKo", skill: 93, moral: 80, role: "Rifler", matches: 130, kd: "1.22", salary: 7800 },
-        { name: "hunter", skill: 85, moral: 85, role: "Rifler", matches: 130, kd: "1.05", salary: 5000 },
-        { name: "malbsmd", skill: 87, moral: 89, role: "Entry", matches: 25, kd: "1.12", salary: 4500 }
+    { id: "paravision", name: "PARIVISION", logo: LOGOS.Paravision, skill: 85, form: 95, points: 690, roster: [
+        { name: "Jame", skill: 87, moral: 90, role: "IGL/AWP", matches: 195, kd: "1.11", salary: 6500 },
+        { name: "BELCHONOKK", skill: 85, moral: 89, role: "Rifler", matches: 80, kd: "1.12", salary: 4600 },
+        { name: "xiELO", skill: 84, moral: 86, role: "Entry", matches: 65, kd: "1.06", salary: 4200 },
+        { name: "nota", skill: 83, moral: 87, role: "Rifler", matches: 70, kd: "1.04", salary: 4100 },
+        { name: "zweih", skill: 82, moral: 85, role: "Support", matches: 50, kd: "1.01", salary: 3800 }
     ]},
-    { id: "vitality", name: "Team Vitality", logo: LOGOS.Vitality, skill: 89, form: 87, points: 780, roster: [
-        { name: "apEX", skill: 83, moral: 92, role: "IGL", matches: 180, kd: "0.99", salary: 5200 },
-        { name: "ZywOo", skill: 96, moral: 90, role: "AWPer", matches: 140, kd: "1.30", salary: 8500 },
-        { name: "flameZ", skill: 87, moral: 86, role: "Entry", matches: 65, kd: "1.10", salary: 4800 },
-        { name: "Spinx", skill: 89, moral: 83, role: "Lurker", matches: 70, kd: "1.15", salary: 5500 },
-        { name: "mezii", skill: 84, moral: 85, role: "Support", matches: 55, kd: "1.03", salary: 4200 }
+    { id: "fut", name: "FUT Esports", logo: LOGOS.FUT, skill: 85, form: 92, points: 610, roster: [
+        { name: "MAJ3R", skill: 81, moral: 92, role: "IGL", matches: 185, kd: "0.95", salary: 4000 },
+        { name: "woxic", skill: 86, moral: 85, role: "AWPer", matches: 175, kd: "1.10", salary: 5500 },
+        { name: "imoRR", skill: 84, moral: 88, role: "Entry", matches: 130, kd: "1.07", salary: 4400 },
+        { name: "xfl0ud", skill: 83, moral: 86, role: "Rifler", matches: 110, kd: "1.03", salary: 4200 },
+        { name: "jottAAA", skill: 82, moral: 84, role: "Support", matches: 60, kd: "1.01", salary: 3800 }
     ]},
-    { id: "mouz", name: "MOUZ", logo: LOGOS.MOUZ, skill: 88, form: 90, points: 750, roster: [
-        { name: "siuhy", skill: 86, moral: 91, role: "IGL", matches: 70, kd: "1.04", salary: 4600 },
-        { name: "torzsi", skill: 88, moral: 84, role: "AWPer", matches: 80, kd: "1.14", salary: 5000 },
-        { name: "xertion", skill: 87, moral: 87, role: "Entry", matches: 70, kd: "1.11", salary: 4800 },
-        { name: "jimpphat", skill: 89, moral: 89, role: "Lurker", matches: 60, kd: "1.18", salary: 5300 },
-        { name: "brollan", skill: 86, moral: 85, role: "Rifler", matches: 55, kd: "1.09", salary: 4700 }
+    { id: "falcons", name: "Team Falcons", logo: LOGOS.Falcons, skill: 92, form: 83, points: 540, roster: [
+        { name: "kyxsan", skill: 83, moral: 88, role: "IGL", matches: 95, kd: "0.97", salary: 5000 },
+        { name: "m0NESY", skill: 97, moral: 96, role: "AWPer", matches: 135, kd: "1.32", salary: 11000 },
+        { name: "NiKo", skill: 92, moral: 84, role: "Rifler", matches: 180, kd: "1.19", salary: 10000 },
+        { name: "TeSeS", skill: 84, moral: 87, role: "Rifler", matches: 190, kd: "1.04", salary: 5200 },
+        { name: "kyousuke", skill: 83, moral: 89, role: "Entry", matches: 50, kd: "1.05", salary: 3900 }
     ]},
-    { id: "vp", name: "Virtus.pro", logo: LOGOS.VP, skill: 86, form: 80, points: 540, roster: [
-        { name: "Jame", skill: 87, moral: 88, role: "IGL/AWP", matches: 150, kd: "1.12", salary: 5500 },
-        { name: "fl1t", skill: 87, moral: 84, role: "Rifler", matches: 110, kd: "1.11", salary: 5000 },
-        { name: "electronic", skill: 88, moral: 78, role: "Rifler", matches: 40, kd: "1.09", salary: 6500 },
-        { name: "fame", skill: 85, moral: 85, role: "Rifler", matches: 95, kd: "1.06", salary: 4500 },
-        { name: "n0rb3r7", skill: 82, moral: 86, role: "Anchor", matches: 90, kd: "1.00", salary: 4000 }
+    { id: "furia", name: "FURIA Esports", logo: LOGOS.Furia, skill: 85, form: 84, points: 490, roster: [
+        { name: "FalleN", skill: 82, moral: 95, role: "IGL/AWP", matches: 405, kd: "1.02", salary: 5800 },
+        { name: "KSCERATO", skill: 89, moral: 88, role: "Rifler", matches: 210, kd: "1.19", salary: 7000 },
+        { name: "yuurih", skill: 85, moral: 87, role: "Rifler", matches: 205, kd: "1.08", salary: 5600 },
+        { name: "YEKINDAR", skill: 84, moral: 81, role: "Entry", matches: 175, kd: "1.05", salary: 6200 },
+        { name: "molodoy", skill: 81, moral: 86, role: "Support", matches: 40, kd: "0.99", salary: 3600 }
     ]},
-    { id: "falcons", name: "Team Falcons", logo: LOGOS.Falcons, skill: 85, form: 78, points: 490, roster: [
-        { name: "Snappi", skill: 80, moral: 80, role: "IGL", matches: 140, kd: "0.88", salary: 4000 },
-        { name: "dupreeh", skill: 85, moral: 88, role: "Entry", matches: 250, kd: "1.05", salary: 5000 },
-        { name: "magisk", skill: 87, moral: 85, role: "Rifler", matches: 190, kd: "1.10", salary: 5800 },
-        { name: "maden", skill: 83, moral: 82, role: "Rifler", matches: 110, kd: "1.01", salary: 4200 },
-        { name: "s1mple", skill: 92, moral: 75, role: "AWPer", matches: 310, kd: "1.24", salary: 9000 }
+    { id: "aurora", name: "Aurora Gaming", logo: LOGOS.Aurora, skill: 86, form: 86, points: 430, roster: [
+        { name: "MAJ3R", skill: 81, moral: 90, role: "IGL", matches: 190, kd: "0.95", salary: 4000 },
+        { name: "XANTARES", skill: 91, moral: 88, role: "Rifler", matches: 210, kd: "1.22", salary: 7500 },
+        { name: "woxic", skill: 86, moral: 84, role: "AWPer", matches: 180, kd: "1.10", salary: 5500 },
+        { name: "Wicadia", skill: 84, moral: 86, role: "Rifler", matches: 85, kd: "1.07", salary: 4400 },
+        { name: "soulfly", skill: 83, moral: 85, role: "Entry", matches: 90, kd: "1.04", salary: 4100 }
     ]},
-    { id: "furia", name: "FURIA Esports", logo: LOGOS.Furia, skill: 84, form: 82, points: 460, roster: [
-        { name: "Fallen", skill: 83, moral: 94, role: "IGL/AWP", matches: 340, kd: "1.03", salary: 5000 },
-        { name: "kscerato", skill: 89, moral: 86, role: "Rifler", matches: 160, kd: "1.19", salary: 6000 },
-        { name: "yuurih", skill: 85, moral: 85, role: "Rifler", matches: 155, kd: "1.08", salary: 4800 },
-        { name: "chelo", skill: 81, moral: 83, role: "Entry", matches: 95, kd: "0.99", salary: 3800 },
-        { name: "skullz", skill: 82, moral: 84, role: "Support", matches: 45, kd: "1.02", salary: 3900 }
+    { id: "mongolz", name: "The MongolZ", logo: LOGOS.Mongolz, skill: 86, form: 88, points: 385, roster: [
+        { name: "bLitz", skill: 86, moral: 93, role: "IGL", matches: 115, kd: "1.08", salary: 4200 },
+        { name: "Techno", skill: 83, moral: 89, role: "Rifler", matches: 120, kd: "1.03", salary: 3900 },
+        { name: "910", skill: 86, moral: 92, role: "AWPer", matches: 110, kd: "1.14", salary: 4600 },
+        { name: "Senzu", skill: 85, moral: 88, role: "Rifler", matches: 100, kd: "1.09", salary: 4300 },
+        { name: "mzinho", skill: 84, moral: 90, role: "Lurker", matches: 105, kd: "1.05", salary: 4000 }
     ]},
-    { id: "aurora", name: "Aurora Gaming", logo: LOGOS.Aurora, skill: 82, form: 81, points: 380, roster: [
-        { name: "lack1", skill: 80, moral: 85, role: "IGL", matches: 85, kd: "0.96", salary: 3000 },
-        { name: "kensi", skill: 84, moral: 83, role: "Rifler", matches: 90, kd: "1.09", salary: 3500 },
-        { name: "norwi", skill: 82, moral: 84, role: "Rifler", matches: 90, kd: "1.05", salary: 3400 },
-        { name: "deko", skill: 86, moral: 78, role: "AWPer", matches: 95, kd: "1.16", salary: 4000 },
-        { name: "r3salt", skill: 83, moral: 87, role: "Rifler", matches: 50, kd: "1.07", salary: 3500 }
+    { id: "astralis", name: "Astralis", logo: LOGOS.Astralis, skill: 85, form: 80, points: 340, roster: [
+        { name: "device", skill: 88, moral: 86, role: "AWPer", matches: 310, kd: "1.15", salary: 8000 },
+        { name: "cadiaN", skill: 84, moral: 90, role: "IGL", matches: 185, kd: "1.02", salary: 5800 },
+        { name: "stavn", skill: 87, moral: 81, role: "Rifler", matches: 150, kd: "1.10", salary: 6800 },
+        { name: "jabbi", skill: 85, moral: 82, role: "Rifler", matches: 140, kd: "1.06", salary: 5400 },
+        { name: "Staehr", skill: 83, moral: 84, role: "Support", matches: 105, kd: "1.02", salary: 4500 }
     ]},
-    { id: "paravision", name: "PARIVISION", logo: LOGOS.Paravision, skill: 81, form: 79, points: 310, roster: [
-        { name: "Jerry", skill: 82, moral: 90, role: "IGL", matches: 130, kd: "1.00", salary: 3500 },
-        { name: "artfr0st", skill: 84, moral: 85, role: "AWPer", matches: 75, kd: "1.12", salary: 3800 },
-        { name: "qikert", skill: 81, moral: 81, role: "Rifler", matches: 170, kd: "0.98", salary: 3600 },
-        { name: "patsi", skill: 82, moral: 79, role: "Entry", matches: 110, kd: "1.04", salary: 3500 },
-        { name: "fl4mus", skill: 83, moral: 88, role: "Rifler", matches: 40, kd: "1.11", salary: 3200 }
+    { id: "mouz", name: "MOUZ", logo: LOGOS.MOUZ, skill: 88, form: 79, points: 295, roster: [
+        { name: "siuhy", skill: 87, moral: 90, role: "IGL", matches: 105, kd: "1.04", salary: 6000 },
+        { name: "torzsi", skill: 88, moral: 85, role: "AWPer", matches: 120, kd: "1.12", salary: 6200 },
+        { name: "Spinx", skill: 89, moral: 86, role: "Lurker", matches: 115, kd: "1.13", salary: 6400 },
+        { name: "Jimpphat", skill: 91, moral: 92, role: "Rifler", matches: 100, kd: "1.21", salary: 7500 },
+        { name: "xertioN", skill: 87, moral: 86, role: "Entry", matches: 110, kd: "1.11", salary: 6000 }
     ]},
-    { id: "mongolz", name: "The MongolZ", logo: LOGOS.Mongolz, skill: 83, form: 88, points: 510, roster: [
-        { name: "b常规itz", skill: 83, moral: 89, role: "IGL", matches: 80, kd: "1.05", salary: 2800 },
-        { name: "Techno4K", skill: 82, moral: 86, role: "Rifler", matches: 85, kd: "1.03", salary: 2700 },
-        { name: "910", skill: 85, moral: 88, role: "AWPer", matches: 75, kd: "1.14", salary: 3200 },
-        { name: "Senzu", skill: 84, moral: 84, role: "Rifler", matches: 60, kd: "1.09", salary: 2900 },
-        { name: "Mzinho", skill: 82, moral: 87, role: "Lurker", matches: 65, kd: "1.04", salary: 2600 }
+    { id: "g2", name: "G2 Esports", logo: LOGOS.G2, skill: 86, form: 76, points: 260, roster: [
+        { name: "Snax", skill: 82, moral: 85, role: "IGL", matches: 70, kd: "0.96", salary: 5000 },
+        { name: "hades", skill: 85, moral: 86, role: "AWPer", matches: 115, kd: "1.08", salary: 4800 },
+        { name: "huNter-", skill: 86, moral: 85, role: "Rifler", matches: 175, kd: "1.05", salary: 6200 },
+        { name: "malbsMd", skill: 89, moral: 90, role: "Entry", matches: 65, kd: "1.14", salary: 6000 },
+        { name: "HeavyGod", skill: 85, moral: 88, role: "Rifler", matches: 70, kd: "1.10", salary: 4600 }
     ]},
-    { id: "liquid", name: "Team Liquid", logo: LOGOS.Liquid, skill: 86, form: 84, points: 580, roster: [
-        { name: "twistzz", skill: 90, moral: 91, role: "IGL/Rifler", matches: 195, kd: "1.16", salary: 7000 },
-        { name: "NAF", skill: 88, moral: 89, role: "Lurker", matches: 210, kd: "1.12", salary: 6500 },
-        { name: "YEKINDAR", skill: 84, moral: 76, role: "Entry", matches: 130, kd: "1.05", salary: 5800 },
-        { name: "ultimate", skill: 86, moral: 88, role: "AWPer", matches: 35, kd: "1.15", salary: 4500 },
-        { name: "jks", skill: 84, moral: 85, role: "Support", matches: 120, kd: "1.03", salary: 4800 }
+    { id: "gl", name: "GamerLegion", logo: LOGOS.GL, skill: 83, form: 84, points: 210, roster: [
+        { name: "ztr", skill: 81, moral: 86, role: "IGL", matches: 90, kd: "0.97", salary: 3400 },
+        { name: "sl3nd", skill: 85, moral: 87, role: "AWPer", matches: 75, kd: "1.12", salary: 4000 },
+        { name: "REZ", skill: 85, moral: 82, role: "Rifler", matches: 210, kd: "1.08", salary: 5000 },
+        { name: "Tauson", skill: 81, moral: 85, role: "Support", matches: 60, kd: "0.99", salary: 3200 },
+        { name: "PR", skill: 82, moral: 84, role: "Rifler", matches: 45, kd: "1.03", salary: 3300 }
     ]},
-    { id: "complexity", name: "Complexity Gaming", logo: LOGOS.Complexity, skill: 84, form: 82, points: 470, roster: [
-        { name: "JT", skill: 81, moral: 87, role: "IGL", matches: 145, kd: "0.94", salary: 4000 },
-        { name: "EliGE", skill: 91, moral: 84, role: "Rifler", matches: 240, kd: "1.20", salary: 7500 },
-        { name: "grim", skill: 83, moral: 81, role: "Rifler", matches: 135, kd: "1.02", salary: 4200 },
-        { name: "floppy", skill: 82, moral: 80, role: "Support", matches: 140, kd: "1.00", salary: 4100 },
-        { name: "hallzerk", skill: 85, moral: 83, role: "AWPer", matches: 110, kd: "1.09", salary: 4600 }
+    { id: "legacy", name: "Legacy", logo: LOGOS.Legacy, skill: 82, form: 85, points: 175, roster: [
+        { name: "NEKIZ", skill: 80, moral: 90, role: "IGL", matches: 110, kd: "0.98", salary: 3100 },
+        { name: "saadzin", skill: 84, moral: 88, role: "AWPer", matches: 70, kd: "1.13", salary: 4200 },
+        { name: "dumau", skill: 83, moral: 86, role: "Rifler", matches: 95, kd: "1.08", salary: 3600 },
+        { name: "latto", skill: 81, moral: 83, role: "Support", matches: 115, kd: "1.01", salary: 3300 },
+        { name: "lux", skill: 82, moral: 85, role: "Rifler", matches: 80, kd: "1.04", salary: 3500 }
     ]}
 ];
 
 // Пул свободных агентов и звезд для трансферов
 let marketPlayers = {
     stars: [
-        { name: "perfecto", skill: 86, price: 95000, salary: 6200, role: "Support", org: "Запасной VP" },
-        { name: "degster", skill: 87, price: 110000, salary: 7500, role: "AWPer", org: "Heroic" },
-        { name: "smooya", skill: 84, price: 55000, salary: 4000, role: "AWPer", org: "Into The Breach" }
+        { name: "degster", skill: 87, price: 540000, salary: 7500, role: "AWPer", org: "Heroic" },
+        { name: "smooya", skill: 84, price: 550000, salary: 4000, role: "AWPer", org: "Into The Breach" }
     ],
     faceit: [
         { name: "aunkere", skill: 79, price: 18000, salary: 1500, role: "Rifler", org: "Свободный агент" },
@@ -752,11 +762,6 @@ function confirmKick(reason) {
 
 // ВКЛАДКИ ГЛАВНОГО МЕНЮ
 function switchMainTab(tab) {
-    if(tab === 'manage') {
-        document.getElementById("main-tab-manage").classList.add("active");
-        document.getElementById("sub-tab-manage").style.display = "block";
-        renderManagePanel();
-    }
     currentTab = tab;
     document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
     document.querySelectorAll(".main-sub-tab").forEach(t => t.style.display = "none");
@@ -776,6 +781,10 @@ function switchMainTab(tab) {
         document.getElementById("main-tab-bet").classList.add("active");
         document.getElementById("sub-tab-bet").style.display = "block";
         renderSponsors();
+    } else if(tab === 'manage') {
+        document.getElementById("main-tab-manage").classList.add("active");
+        document.getElementById("sub-tab-manage").style.display = "block";
+        renderManagePanel();
     }
 }
 
@@ -1416,11 +1425,6 @@ function finishPress(win, answerType) {
     renderBracketView();
     goScreen("screen-bracket");
 }
-    if(tab === 'manage') {
-        document.getElementById("main-tab-manage").classList.add("active");
-        document.getElementById("sub-tab-manage").style.display = "block";
-        renderManagePanel();
-    }
 // ФУНКЦИИ ПЛАШКИ УПРАВЛЕНИЯ
 function renderManagePanel() {
     let list = document.getElementById("manage-roster-list");
@@ -1516,181 +1520,12 @@ function sendChatMessage() {
     }, 600);
 }
 // ==========================================
-// СИСТЕМА УПРАВЛЕНИЯ ЗАРПЛАТАМИ И ИИ-ОБЩЕНИЯ
-// ==========================================
-
-function renderManagePanel() {
-    let list = document.getElementById("manage-roster-list");
-    let select = document.getElementById("chat-player-select");
-    list.innerHTML = "";
-    select.innerHTML = "";
-    
-    let myPlayers = teamsData[myTeamId].players;
-    
-    myPlayers.forEach((p, idx) => {
-        // Если у игрока еще нет прописанной зарплаты, ставим базовую
-        if(!p.salary) p.salary = Math.round((p.skill * 60) + (p.moral * 15));
-        
-        list.innerHTML += `
-            <div class="player-card" style="background:var(--card-bg); margin-bottom:12px; padding:15px; display:flex; justify-content:between; align-items:center; width:100%; box-sizing:border-box;">
-                <div style="display:flex; align-items:center; gap:15px;">
-                    <img src="${getPlayerAvatar(p.name)}" class="p-avatar-img" style="width:45px; height:45px;">
-                    <div>
-                        <strong style="font-size:16px; color:#fff;">${p.name.toUpperCase()}</strong>
-                        <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">
-                            Оклад: <span style="color:var(--green-money); font-weight:bold;">$${p.salary}</span>/мес | Мораль: ${p.moral}%
-                        </div>
-                    </div>
-                </div>
-                <div style="display:flex; gap:8px;">
-                    <button onclick="changeSalary(${idx}, 500)" style="background:var(--green-money); color:#000; padding:6px 12px; font-size:11px; font-weight:900;">+$500</button>
-                    <button onclick="changeSalary(${idx}, -500)" style="background:var(--red-alert); padding:6px 12px; font-size:11px; font-weight:900;">-$500</button>
-                </div>
-            </div>
-        `;
-        
-        select.innerHTML += `<option value="${idx}">${p.name.toUpperCase()}</option>`;
-    });
-}
-
-function changeSalary(idx, amount) {
-    let p = teamsData[myTeamId].players[idx];
-    if(!p.salary) p.salary = 4000;
-    
-    p.salary = Math.max(1000, p.salary + amount);
-    
-    if(amount > 0) {
-        p.moral = Math.min(100, p.moral + 10);
-        p.skill = Math.min(100, p.skill + 1);
-        alert(`Вы повысили ежемесячный оклад игроку ${p.name.toUpperCase()}. Его лояльность и мораль выросли!`);
-    } else {
-        p.moral = Math.max(10, p.moral - 20);
-        p.skill = Math.max(50, p.skill - 2);
-        teamChemistry = Math.max(10, teamChemistry - 3);
-        alert(`Вы урезали бюджет контракта ${p.name.toUpperCase()}. Игрок демотивирован и начал токсичить.`);
-    }
-    renderManagePanel();
-    updateUI();
-}
-
-function sendChatMessage() {
-    let input = document.getElementById("chat-input");
-    let text = input.value.trim();
-    if(!text) return;
-    
-    let pIdx = document.getElementById("chat-player-select").value;
-    let player = teamsData[myTeamId].players[pIdx];
-    let chatBox = document.getElementById("chat-box");
-    
-    // Стираем дефолтную надпись, если она была
-    if (chatBox.innerHTML.includes("Выберите киберспортсмена")) chatBox.innerHTML = "";
-    
-    // Добавляем сообщение менеджера в чат-бокс
-    chatBox.innerHTML = `<div style="margin-bottom:8px; text-align:right;"><span style="color:var(--accent-cyan); font-weight:bold;">Вы:</span> ${text}</div>` + chatBox.innerHTML;
-    input.value = "";
-    
-    let msgLower = text.toLowerCase();
-    let aiResponse = "";
-    
-    // ИИ-генерация ответов в зависимости от характера сообщения и морали игрока
-    if(msgLower.includes("плохо") || msgLower.includes("кик") || msgLower.includes("ужасно") || msgLower.includes("нуб") || msgLower.includes("слабо")) {
-        if(player.moral > 75) {
-            aiResponse = `«Я знаю, что последние карты провалил, босс. Но я тренируюсь сутками на FACEIT. Не нужно угрожать киком, дайте мне показать себя на официалке.»`;
-            player.moral = Math.max(10, player.moral - 8);
-        } else {
-            aiResponse = `«Сам попробуй выйти на сервер против donk или m0NESY! С такой тактикой и атмосферой в клубе ни один рифлер не заиграет. Ищите мне команду для трансфера.»`;
-            player.moral = Math.max(10, player.moral - 15);
-        }
-    } else if(msgLower.includes("красавчик") || msgLower.includes("лучший") || msgLower.includes("хорош") || msgLower.includes("молодец") || msgLower.includes("тащи")) {
-        aiResponse = `«Спасибо за респект, шеф! Очень мотивирует, когда руководство следит за импактом, а не просто считает K/D. На следующем праке выложусь на максимум!»`;
-        player.moral = Math.min(100, player.moral + 10);
-    } else if(msgLower.includes("тренируйся") || msgLower.includes("прак") || msgLower.includes("тактика") || msgLower.includes("разбор")) {
-        aiResponse = `«Принял. Мы как раз обсуждали с ингейм-лидером, что нужно перестроить наши дефолты за атаку. Пойду раскидки на Mirage повторять.»`;
-        player.skill = Math.min(100, player.skill + 1);
-    } else {
-        // Универсальные рандомные фразы
-        const generalAnswers = [
-            `«Да всё нормально, девайсы настроил, стрельба летит. Главное, чтобы зп капала вовремя, а фраги на Мейджоре я организую.»`,
-            `«Настроение рабочее. Какую карту на вето будем оставлять? Мне кажется, нам нужно забанить Inferno против их снайпера.»`,
-            `«Всё под контролем. Не переживайте, тимспирит или нави мы раскатаем, если пинг на буткемпе опять падать не будет.»`
-        ];
-        aiResponse = generalAnswers[Math.floor(Math.random() * generalAnswers.length)];
-    }
-    
-    // Задержка ответа "ИИ" для реалистичности
-    setTimeout(() => {
-        chatBox.innerHTML = `<div style="margin-bottom:12px; text-align:left;"><span style="color:var(--accent-orange); font-weight:bold;">${player.name.toUpperCase()}:</span> ${aiResponse}</div>` + chatBox.innerHTML;
-        renderManagePanel();
-    }, 500);
-}
-
 // ==========================================
 // РАСШИРЕННЫЕ ИИ-КОММЕНТАРИИ ПОСЛЕ МАТЧА
 // ==========================================
 
 function generateExtendedAICommentary() {
-    let myTeamName = teamsData[myTeamId].name;
-    let enemyTeamName = teamsData[currentOpponentId].name;
-    let commentsArr = [];
-    
-    if(seriesScoreA > seriesScoreB) {
-        // Сценарии НАШЕЙ ПОБЕДЫ
-        if(seriesScoreA === 2 && seriesScoreB === 0) {
-            commentsArr = [
-                `Это был абсолютный разгром! ${myTeamName} не оставили камня на камне от защиты соперника, закрыв серию со счетом 2:0. Аналитики HLTV отмечают, что стадия вето была полностью выиграна вашим клубом, а координация игроков напоминала швейцарские часы. Пресса считает вас главными фаворитами плей-офф!`,
-                `Фантастический перформанс от ${myTeamName}! Комментаторы сорвали голос, обсуждая ваши эко-раунды и агрессивные выпады. Снайпер команды читал карту как открытую книгу. Спонсоры потирают руки от взлетевших охватов, а реддит переполнен хайлайтами ваших парней.`
-            ];
-        } else {
-            commentsArr = [
-                `Валидольная серия завершилась победой ${myTeamName} со счетом 2:1! Проиграв одну из карт, вы смогли вовремя перестроиться во время тактических пауз. Эксперты заявляют: 'Менеджмент проделал колоссальную работу над психологией ростера, команда не тильтанула после тяжелого старта и вырвала путевку в финал!'`,
-                `Камбэк века! ${enemyTeamName} диктовали свои условия, но ${myTeamName} проявили стальной характер. Переломный момент на децидере показал, что сыгранность вашей команды находится на пиковом уровне. Пресса в экстазе от решений руководства!`
-            ];
-        }
-    } else {
-        // Сценарии НАШЕГО ПОРАЖЕНИЯ
-        if(seriesScoreB === 2 && seriesScoreA === 0) {
-            commentsArr = [
-                `Катастрофический вылет. ${myTeamName} терпят крушение со счетом 0:2. В твиттере фанаты устраивают бунт, требуя немедленных кадровых перестановок и киков. Инсайдеры шепчутся, что техническая база клуба устарела, а игрокам банально не хватило огневой мощи и концентрации в ключевых клатчах.`,
-                `Полный провал на сервере. Оппоненты из ${enemyTeamName} были быстрее, точнее и читали каждый раш. Менеджменту предстоит тяжелый разговор с инвесторами: организация теряет позиции в мировом рейтинге HLTV, а звездные игроки выглядят полностью демотивированными.`
-            ];
-        } else {
-            commentsArr = [
-                `Трагедия на трех картах. ${myTeamName} уступают в серии 1:2. Все решилось на допах последней карты, где вашему составу не хватило выносливости. Журналисты отмечают: 'Потенциал у состава огромный, но тактические просчеты и слабая мораль отдельных стрелков подкосили экономику клуба в решающий момент.'`,
-                `Близкая битва, закончившаяся слезами болельщиков. ${myTeamName} боролись до последнего патрона, но форс-мажоры и ошибки на вето привели к поражению. Соцсети гудят: клубу необходим срочный буткемп или точечные трансферы свободных агентов с FACEIT.`
-            ];
-        }
-    }
-    
-    return commentsArr[Math.floor(Math.random() * commentsArr.length)];
-}
-
-function closeMatchAndOpenPress() {
-    // 1. Переключаем экран
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    document.getElementById("screen-press").classList.add("active");
-    
-    let q = document.getElementById("press-question");
-    let opt = document.getElementById("press-options"); 
-    opt.innerHTML = "";
-    
-    // 2. Генерируем случайный уникальный комментарий
-    const comments = [
-        `Журналист: «Потрясающая игра! Что стало ключом к победе в этой серии?»`,
-        `Журналист: «Вы вырвали победу в тяжелейшем матче. Как вы оцениваете форму ваших стрелков?»`,
-        `Журналист: «Обидное поражение. Чего именно не хватило команде для доминирования на сервере?»`,
-        `Журналист: «Кажется, ваша тактика на этой карте была прочитана оппонентом. Будут ли изменения в подготовке?»`
-    ];
-    
-    q.innerText = comments[Math.floor(Math.random() * comments.length)];
-    
-    // 3. Добавляем кнопки выбора (реакции)
-    if(seriesScoreA > seriesScoreB) {
-        opt.innerHTML += `<button class="modal-option-btn" onclick="finishPress(true)">«Мы идеально подготовились к вето»</button>`;
-        opt.innerHTML += `<button class="modal-option-btn" onclick="finishPress(true)">«Парни просто показали уровень»</button>`;
-    } else {
-        opt.innerHTML += `<button class="modal-option-btn" onclick="finishPress(false)">«Соперник был сильнее, мы сделаем выводы»</button>`;
-        opt.innerHTML += `<button class="modal-option-btn" onclick="finishPress(false)">«Не хватило дисциплины, будут замены»</button>`;
-    }
+    return "";
 }
 </script>
 </body>

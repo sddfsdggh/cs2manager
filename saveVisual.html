@@ -1,0 +1,1796 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CS2 Esports Manager 2026 Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Orbitron:wght@700;900&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --dark-bg: #060709;
+            --panel-bg: #0d1017;
+            --card-bg: #131722;
+            --accent-orange: #ff5500;
+            --accent-orange-glow: rgba(255, 85, 0, 0.4);
+            --accent-cyan: #00ffcc;
+            --accent-cyan-glow: rgba(0, 255, 204, 0.3);
+            --text-main: #f5f7fa;
+            --text-muted: #626875;
+            --green-money: #00ff66;
+            --green-glow: rgba(0, 255, 102, 0.3);
+            --red-alert: #ff3344;
+            --red-glow: rgba(255, 51, 68, 0.3);
+            --border-color: #1e2330;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background-color: var(--dark-bg);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        .screen { 
+            display: none;
+            padding: 40px; 
+            box-sizing: border-box; 
+            min-height: 100vh; 
+            max-width: 1600px; 
+            margin: 0 auto;
+        }
+        .screen.active { display: block; }
+
+        h1, h2, h3, .tournament-title, .hud-center-panel {
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 1px;
+        }
+
+        .select-container { max-width: 1400px; margin: 40px auto; text-align: center; }
+        
+        .grid-teams { 
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
+            gap: 25px; 
+            margin-top: 40px; 
+        }
+        
+        .team-select-card {
+            background: var(--panel-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
+            padding: 25px;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .team-select-card:hover {
+            border-color: var(--accent-orange);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px var(--accent-orange-glow);
+        }
+        .team-logo-img { width: 80px; height: 80px; object-fit: contain; margin-bottom: 15px; transition: transform 0.3s; }
+        .team-select-card:hover .team-logo-img { transform: scale(1.1); }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--panel-bg);
+            padding: 25px 50px;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 35px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .dashboard-grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 30px; margin-bottom: 35px; }
+        .panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 4px 25px rgba(0,0,0,0.2);
+        }
+        h2 { font-size: 22px; border-bottom: 2px solid var(--border-color); padding-bottom: 15px; margin-top: 0; margin-bottom: 25px; color: #fff; }
+
+        .player-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 16px 20px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: border-color 0.2s;
+        }
+        .player-card:hover { border-color: #2e3547; }
+        .p-info { display: flex; align-items: center; gap: 20px; }
+        .p-avatar-img { width: 55px; height: 55px; border-radius: 10px; object-fit: cover; background: #171c28; border: 1px solid #252c3e; }
+        .p-name { font-weight: 900; font-size: 17px; }
+        .p-meta { font-size: 13px; color: var(--text-muted); margin-top: 4px; font-family: 'JetBrains Mono', monospace; }
+        .p-badge { background: #060709; padding: 6px 12px; border-radius: 8px; font-weight: bold; color: var(--accent-cyan); font-size: 13px; border: 1px solid rgba(0,255,204,0.1); }
+        
+        button {
+            background: var(--accent-orange);
+            color: white; border: none; padding: 14px 28px;
+            font-weight: 700; border-radius: 10px; cursor: pointer; text-transform: uppercase; font-size: 12px;
+            letter-spacing: 0.5px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+        button:hover:not(:disabled) {
+            background: #ff661a;
+            box-shadow: 0 0 20px var(--accent-orange-glow);
+            transform: translateY(-1px);
+        }
+        button:active:not(:disabled) {
+            transform: translateY(1px);
+            box-shadow: 0 0 5px var(--accent-orange-glow);
+        }
+        button:disabled { background: #1c212d; color: var(--text-muted); cursor: not-allowed; border: 1px solid #252b3a; box-shadow: none !important; }
+        
+        .tab-bar { display: flex; gap: 10px; margin-bottom: 25px; background: #000; padding: 6px; border-radius: 12px; }
+        .tab-btn { background: transparent; color: var(--text-muted); flex: 1; padding: 12px; border-radius: 8px; text-transform: none; font-size: 13px; }
+        .tab-btn.active { background: var(--card-bg); color: #fff; font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.4); }
+        .tab-btn:hover:not(.active) { color: #fff; background: rgba(255,255,255,0.02); box-shadow: none; }
+
+        .social-feed-widget { background: #060709; border: 1px solid var(--border-color); border-radius: 14px; padding: 20px; height: 220px; overflow-y: auto; }
+        .tweet-entry { border-bottom: 1px solid #161a24; padding: 12px 0; font-size: 14px; cursor: pointer; transition: background 0.2s; }
+        .tweet-entry:hover { background: rgba(255,255,255,0.02); }
+        .tweet-author { font-weight: bold; color: var(--accent-cyan); margin-right: 5px; }
+
+        .hltv-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 15px; }
+        .hltv-table th { color: var(--text-muted); padding: 12px; border-bottom: 2px solid var(--border-color); text-transform: uppercase; font-size: 12px; }
+        .hltv-table td { padding: 15px 12px; border-bottom: 1px solid #161a24; }
+
+        .veto-box { max-width: 700px; margin: 40px auto; background: var(--panel-bg); border: 1px solid var(--border-color); padding: 35px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+        .map-item { 
+            background-size: cover; background-position: center; border: 1px solid rgba(255,255,255,0.08); 
+            padding: 25px; margin: 15px 0; border-radius: 12px; display: flex; justify-content: space-between; align-items: center;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.9); transition: transform 0.2s;
+        }
+        .map-item:hover { transform: scale(1.01); border-color: rgba(255,255,255,0.2); }
+        
+        .esports-hud {
+            background: #090c12; border: 2px solid var(--border-color); border-radius: 24px; padding: 25px 40px;
+            display: flex; align-items: center; justify-content: space-between; margin-bottom: 30px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+        }
+        .hud-team-block { display: flex; align-items: center; gap: 25px; width: 35%; }
+        .hud-logo { width: 75px; height: 75px; object-fit: contain; filter: drop-shadow(0 0 8px rgba(255,255,255,0.1)); }
+
+        .hud-center-panel {
+            background-size: cover; background-position: center; padding: 15px 50px; border-radius: 16px; border: 2px solid rgba(255, 255, 255, 0.12);
+            position: relative; min-width: 240px; text-align: center;
+            box-shadow: inset 0 0 50px rgba(0,0,0,0.9), 0 4px 20px rgba(0,0,0,0.6);
+        }
+        .hud-map-label { color: var(--accent-cyan); font-size: 14px; font-weight: 900; letter-spacing: 2px; text-shadow: 0 2px 4px #000; margin-bottom: 5px; }
+        .hud-score-text { font-size: 52px; font-weight: 900; text-shadow: 0 3px 10px #000; color: #fff; }
+
+        .match-player-row {
+            display: flex; align-items: center; justify-content: space-between; background: rgba(19, 23, 34, 0.6); border: 1px solid #1c2233;
+            padding: 12px 18px; border-radius: 12px; margin-bottom: 10px; backdrop-filter: blur(5px); transition: all 0.2s;
+        }
+        .match-player-row:hover { background: rgba(255,255,255,0.02); border-color: #2a334d; }
+        .match-player-row.reverse { flex-direction: row-reverse; }
+        .m-p-nick { font-size: 17px; font-weight: 900; color: #fff; }
+        .m-p-stats { font-family: 'JetBrains Mono', monospace; font-size: 15px; color: var(--accent-cyan); font-weight: bold; letter-spacing: 0.5px; }
+
+        .player-avatar { width:72px; height:72px; border-radius:12px; object-fit:cover; margin-right:16px; border:1px solid #1a1d24; box-shadow: 0 5px 18px rgba(0,0,0,0.55); }
+        .player-row-left { display:flex; align-items:center; gap:14px; }
+        .stat-bars { display:flex; flex-direction:column; gap:8px; width:280px; max-width:38%; min-width:200px; margin-left:16px; }
+        .stat-row { display:flex; align-items:center; gap:8px; font-size:12px; color:var(--text-muted); }
+        .stat-bar { height:11px; background:#0b0d11; border-radius:6px; overflow:hidden; flex:1; border:1px solid rgba(255,255,255,0.03); }
+        .stat-bar-inner { height:100%; transition: width 700ms cubic-bezier(.2,.9,.3,1); box-shadow: 0 2px 8px rgba(0,0,0,0.45) inset; }
+        .hp-inner { background: linear-gradient(90deg,#00ff66,#ffe34d,#ff3344); }
+        .eff-inner { background: linear-gradient(90deg,#00ffcc,#00a3ff,#ff5500); }
+
+        .match-grid-container { display: grid; grid-template-columns: 1.4fr 1.8fr 1.4fr; gap: 25px; }
+
+        .console-logs { 
+            background: #040508; border: 2px solid #171b26; border-radius: 18px; padding: 25px; 
+            overflow-y: auto; font-size: 15px; height: 480px; box-shadow: inset 0 4px 20px rgba(0,0,0,0.8); line-height: 1.5;
+        }
+        .c-entry { margin-bottom: 12px; padding: 10px 14px; border-radius: 8px; border-left: 4px solid var(--text-muted); background: rgba(255,255,255,0.01); }
+        .c-us { border-left-color: var(--accent-cyan); background: rgba(0,255,204,0.02); }
+        .c-en { border-left-color: var(--accent-orange); background: rgba(255,85,0,0.02); }
+        .c-ot { border-left-color: #e5c158; background: rgba(229,193,88,0.04); font-weight: bold; color: #e5c158; }
+
+        .bracket-container { display: flex; flex-direction: column; gap: 30px; margin: 30px auto; max-width: 1000px; }
+        .stage-title { font-size: 14px; color: var(--accent-orange); font-weight: 900; text-transform: uppercase; text-align: left; margin-bottom: 12px; border-left: 3px solid var(--accent-orange); padding-left: 10px; }
+        .bracket-match-node { background: var(--panel-bg); border: 2px solid var(--border-color); border-radius: 14px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.2); margin-bottom: 15px; }
+        .bracket-team-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-bottom: 1px solid var(--border-color); }
+        .bracket-team-row:last-child { border-bottom: none; }
+        .b-team-info { display: flex; align-items: center; gap: 12px; font-size: 15px; font-weight: bold; }
+        .b-team-logo { width: 28px; height: 28px; object-fit: contain; }
+        .b-score { font-family: 'JetBrains Mono', monospace; font-size: 16px; font-weight: 900; padding: 4px 10px; border-radius: 6px; min-width: 20px; text-align: center; }
+        
+        .score-win { background: rgba(0, 255, 102, 0.12); color: var(--green-money); border: 1px solid rgba(0, 255, 102, 0.25); box-shadow: 0 0 10px var(--green-glow); }
+        .score-lose { background: rgba(255, 51, 68, 0.12); color: var(--red-alert); border: 1px solid rgba(255, 51, 68, 0.25); box-shadow: 0 0 10px var(--red-glow); }
+
+        .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); display:none; align-items:center; justify-content:center; z-index:2000; backdrop-filter:blur(4px); }
+        .modal-box { background: var(--panel-bg); border: 2px solid var(--border-color); padding: 35px; border-radius: 20px; max-width: 550px; width: 90%; box-shadow: 0 20px 50px rgba(0,0,0,0.6); }
+        .modal-option-btn { background: var(--card-bg); text-transform: none; text-align: left; width: 100%; margin-bottom: 12px; padding: 16px; border: 1px solid var(--border-color); color: #fff; border-radius: 10px; cursor: pointer;}
+        .modal-option-btn:hover { border-color: var(--accent-cyan); box-shadow: 0 0 15px var(--accent-cyan-glow); }
+    </style>
+</head>
+<body>
+
+<script>
+function playClickSound() {
+    try {
+        let ctx = new (window.AudioContext || window.webkitAudioContext)();
+        let osc = ctx.createOscillator();
+        let gain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(120, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(40, ctx.currentTime + 0.04);
+        gain.gain.setValueAtTime(0.04, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.04);
+    } catch(e) {}
+}
+
+document.addEventListener('click', function(e) {
+    if (e.target && e.target.tagName === 'BUTTON') {
+        playClickSound();
+    }
+});
+</script>
+
+<div id="comment-popup-modal" class="modal-overlay">
+    <div class="modal-box">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <div id="popup-author" style="font-weight: bold; color: var(--accent-cyan); font-size: 16px;"></div>
+            <div style="font-size: 11px; color: var(--text-muted);">ПРЯМОЙ ЭФИР HLTV</div>
+        </div>
+        <p id="popup-text" style="line-height: 1.6; font-size: 15px; background: #090a0f; padding: 15px; border-radius: 10px; border: 1px solid var(--border-color);"></p>
+        <div style="margin-top: 15px; border-top: 1px solid var(--border-color); padding-top: 15px;">
+            <div style="font-size: 12px; color: var(--accent-orange); font-weight: bold; margin-bottom: 5px;">🔥 Мнение фанатов на форуме:</div>
+            <div id="popup-fan-opinion" style="font-size: 13px; color: var(--text-muted); font-style: italic;"></div>
+        </div>
+        <button onclick="closeCommentPopup()" style="width: 100%; margin-top: 20px; background: #222634;">Закрыть окно</button>
+    </div>
+</div>
+
+<div id="event-modal" class="modal-overlay">
+    <div class="modal-box">
+        <div style="font-size: 11px; text-transform: uppercase; color: var(--accent-cyan); font-weight: 900; margin-bottom: 10px;">⚠️ ЧП В КОМАНДЕ</div>
+        <h3 id="event-title" style="margin: 0 0 15px 0;"></h3>
+        <p id="event-desc" style="color: var(--text-muted); font-size: 14px; margin-bottom: 25px;"></p>
+        <div id="event-options-container" style="display: flex; flex-direction: column; gap: 10px;"></div>
+    </div>
+</div>
+
+<div id="kick-modal" class="modal-overlay">
+    <div class="modal-box">
+        <h3>🚫 Увольнение игрока</h3>
+        <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 20px;">Укажите official причину исключения игрока из организации:</p>
+        <button class="modal-option-btn" onclick="confirmKick('toxic')">☣️ «Разрушение atmosphere и токсичное поведение»<br><span style="color:var(--text-muted); font-size:11px;">Мораль других вырастет, но его цена на рынке упадет.</span></button>
+        <button class="modal-option-btn" onclick="confirmKick('low_kd')">📉 «Спад индивидуальной формы и неудовлетворительный K/D»<br><span style="color:var(--text-muted); font-size:11px;">Игрок уйдет тихо, трансферная репутация не пострадает.</span></button>
+        <button class="modal-option-btn" onclick="confirmKick('regime')">🍺 «Систематическое нарушение спортивного режима клуба»<br><span style="color:var(--text-muted); font-size:11px;">Вызовет бурные обсуждения инсайдеров и волну хайпа.</span></button>
+        <button onclick="closeKickModal()" style="background:#222634; width:100%; margin-top:10px;">Отмена</button>
+    </div>
+</div>
+
+<div id="screen-select" class="screen active">
+    <div class="select-container">
+        <h1 style="font-size: 36px; font-weight: 900; margin-bottom: 10px;">CS2 <span style="color:var(--accent-orange)">Esports Manager</span> 2026</h1>
+        <p style="color: var(--text-muted); margin-bottom: 30px;">Выберите клуб для старта карьеры профессионального менеджера</p>
+        <div class="grid-teams" id="select-teams-list"></div>
+    </div>
+</div>
+
+<div id="screen-main" class="screen">
+    <header>
+        <div style="display: flex; align-items: center; gap: 20px;">
+            <img id="my-team-logo" src="" class="hud-logo" alt="" style="display:none;">
+            <div>
+                <h2 id="my-team-name" style="margin:0; border:none; padding:0; font-size: 24px;">Team Name</h2>
+                <div style="font-size:13px; color:var(--text-muted); margin-top:4px;">Сыгранность: <span id="chem-txt" style="color:var(--accent-cyan); font-weight:bold;">100%</span> | Спонсор: <span id="sponsor-txt" style="color:#fff; font-weight:bold;">Нет</span></div>
+            </div>
+        </div>
+        <div style="text-align: right;">
+            <div style="font-size: 11px; color: var(--text-muted); text-transform:uppercase;">Бюджет клуба</div>
+            <div id="balance-txt" style="font-size: 28px; font-weight: 900; color: var(--green-money);">0$</div>
+        </div>
+    </header>
+
+    <div class="tab-bar">
+        <button class="tab-btn active" id="main-tab-hub" onclick="switchMainTab('hub')">🏢 База клуба</button>
+        <button class="tab-btn" id="main-tab-market" onclick="switchMainTab('market')">🛒 Трансферы</button>
+        <button class="tab-btn" id="main-tab-hltv" onclick="switchMainTab('hltv')">📊 Рейтинг HLTV</button>
+        <button class="tab-btn" id="main-tab-bet" onclick="switchMainTab('bet')">🤝 Букмекеры и Бетки</button>
+        <button class="tab-btn" id="main-tab-manage" onclick="switchMainTab('manage')">⚙️ Управление & ИИ Чат</button>
+    </div>
+   
+ <div id="sub-tab-hub" class="main-sub-tab">
+        <div class="dashboard-grid">
+            <div class="panel">
+                <h2>👥 Активный состав команды</h2>
+                <div id="roster-list"></div>
+                <h2 style="margin-top: 25px;">🏢 Инфраструктура</h2>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+                    <button onclick="buyUpgrade('monitors')" id="up-monitors" style="background:#1b1e2a; border:1px solid var(--border-color); padding:12px;">🖥️ Мониторы 540Hz ($25k)<br><span style="color:var(--text-muted); font-size:10px;">+2 к скиллу ростера</span></button>
+                    <button onclick="buyUpgrade('psychologist')" id="up-psychologist" style="background:#1b1e2a; border:1px solid var(--border-color); padding:12px;">🧠 Топ-Психолог ($30k)<br><span style="color:var(--text-muted); font-size:10px;">Стабилизирует мораль</span></button>
+                    <button onclick="buyUpgrade('media')" id="up-media" style="background:#1b1e2a; border:1px solid var(--border-color); padding:12px;">📱 Студия контента ($40k)<br><span style="color:var(--text-muted); font-size:10px;">+30% притока от спонсоров</span></button>
+                    <button onclick="buyBootcamp()" style="background:#1b1e2a; border:1px solid var(--border-color); padding:12px;">💻 Собрать Буткемп ($15k)<br><span style="color:var(--text-muted); font-size:10px;">Сыгранность +10%</span></button>
+                </div>
+            </div>
+            <div class="panel" style="display:flex; flex-direction:column; justify-content:space-between;">
+                <div>
+                    <h2>📱 Социальные сети & Инсайды</h2>
+                    <div class="social-feed-widget" id="twitter-feed"></div>
+                </div>
+                <div style="background:linear-gradient(135deg, #151821, #0c0e14); padding:25px; border-radius:16px; border:1px solid var(--border-color); margin-top:20px;">
+                    <div style="font-size:11px; text-transform:uppercase; color:var(--accent-orange); font-weight:bold;">Ближайший турнир</div>
+                    <div style="font-size: 20px; font-weight: 800; margin: 5px 0 15px 0; font-family: 'Orbitron';">PGL Major 2026</div>
+                    <button onclick="generateTournamentBracket()" style="width:100%; padding:14px;">Симулировать турнирную сетку</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="sub-tab-market" class="main-sub-tab" style="display:none;">
+        <div class="panel">
+            <h2>🛒 Трансферное окно (Живая симуляция)</h2>
+            <div class="tab-bar" style="max-width: 400px;">
+                <button class="tab-btn active" id="btn-t-stars" onclick="setMarketTab('stars')">Звезды сцены</button>
+                <button class="tab-btn" id="btn-t-faceit" onclick="setMarketTab('faceit')">Свободные агенты</button>
+            </div>
+            <div id="market-status" style="margin:16px 0 14px 0; color:var(--text-muted); font-size:13px;"></div>
+            <div id="market-list" style="max-height: 500px; overflow-y:auto;"></div>
+        </div>
+    </div>
+
+    <div id="sub-tab-hltv" class="main-sub-tab" style="display:none;">
+        <div class="panel">
+            <h2>📊 Мировой рейтинг команд HLTV 2026</h2>
+            <table class="hltv-table">
+                <thead>
+                    <tr>
+                        <th style="width: 50px;">Ранг</th>
+                        <th>Команда</th>
+                        <th>Средний скилл игроков</th>
+                        <th>Очки формы</th>
+                    </tr>
+                </thead>
+                <tbody id="hltv-ranking-body"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="sub-tab-bet" class="main-sub-tab" style="display:none;">
+        <div class="panel">
+            <h2>🤝 Выбор титульного партнера / Букмекерской конторы (Бетки)</h2>
+            <p style="color:var(--text-muted); font-size:14px; margin-bottom:20px;">Подписание спонсорского соглашения принесет немедленный бюджет. Дюпы заблокированы.</p>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;" id="sponsors-container"></div>
+        </div>
+    </div>
+    <div id="sub-tab-manage" class="main-sub-tab" style="display:none;">
+        <div class="panel">
+            <h2>⚙️ Контракты, Зарплаты и Общение с Командой</h2>
+            <p style="color:var(--text-muted); font-size:13px; margin-bottom:20px;">Регулируйте финансовую мотивацию игроков и общайтесь с ними. Мораль и скилл меняются динамически!</p>
+            
+            <div style="display:grid; grid-template-columns: 1.2fr 1fr; gap:25px;">
+                <div style="background:#090a0e; padding:20px; border-radius:12px; border:1px solid var(--border-color);">
+                    <h3 style="margin-top:0; color:#fff;">📋 Финансы и Оклады ростера</h3>
+                    <div id="manage-roster-list"></div>
+                </div>
+                
+                <div style="background:#090a0e; padding:20px; border-radius:12px; border:1px solid var(--border-color); display:flex; flex-direction:column; justify-content:space-between; height:460px;">
+                    <div>
+                        <h3 style="margin-top:0; color:#fff;">💬 Личные сообщения (ИИ-Ответ)</h3>
+                        <select id="chat-player-select" style="width:100%; padding:10px; background:var(--card-bg); color:#fff; border:1px solid var(--border-color); border-radius:8px; margin-bottom:15px; font-weight:bold;"></select>
+                        
+                        <div id="chat-box" style="background:#040507; border:1px solid var(--border-color); padding:15px; height:220px; overflow-y:auto; border-radius:8px; font-size:14px; line-height:1.4; display:flex; flex-direction:column-reverse;">
+                            <div style="color:var(--text-muted); font-style:italic;">Выберите киберспортсмена и напишите ему что-нибудь...</div>
+                        </div>
+                    </div>
+                    
+                    <div style="display:flex; gap:10px; margin-top:15px;">
+                        <input type="text" id="chat-input" placeholder="Напишите игроку (например: Ты сыграл отлично! или Хватит тильтовать)..." style="flex:1; padding:12px; background:var(--card-bg); color:#fff; border:1px solid var(--border-color); border-radius:8px; font-size:13px;">
+                        <button onclick="sendChatMessage()" style="padding:0 20px;">Отправить</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="screen-bracket" class="screen">
+    <div class="panel" style="max-width:1100px; margin: 40px auto; text-align:center;">
+        <h2 style="border:none; font-size:26px; margin-bottom:5px;">Матчи Плей-офф Стадии PGL Major</h2>
+        <p style="color:var(--text-muted); margin-bottom:30px;">Результаты симуляции сетки турнира. Победители подсвечены зеленым, проигравшие — красным.</p>
+        
+        <div class="bracket-container" id="bracket-view"></div>
+        
+        <div style="display:flex; justify-content:center; gap:14px; flex-wrap:wrap; margin-top:20px;">
+            <button id="btn-enter-server" onclick="checkIncidentsBeforeMatch()" style="padding:16px 50px; font-size:14px;">Выйти на сервер</button>
+            <button onclick="goScreen('screen-main')" style="padding:16px 42px; font-size:14px; background:#222;">Назад в меню команды</button>
+        </div>
+    </div>
+</div>
+
+<div id="screen-veto" class="screen">
+    <div class="veto-box">
+        <h2 style="border:none; text-align:center;">🗺️ Стадия ВЕТО (Вычеркивание карт)</h2>
+        <p style="color:var(--accent-orange); font-weight:bold; text-align:center; margin-bottom:25px;">Ваш ход вычеркивания</p>
+        <div id="veto-maps-container"></div>
+    </div>
+</div>
+
+<div id="screen-match" class="screen">
+    <div style="max-width: 1500px; margin: 0 auto;">
+        <div class="esports-hud">
+            <div class="hud-team-block">
+                <img id="hud-logo-a" src="" class="hud-logo" alt="">
+                <div>
+                    <div id="hud-name-a" style="font-weight:900; font-size:22px; font-family:'Orbitron';">Team A</div>
+                    <div style="font-size:13px; color:var(--text-muted); margin-top:4px;">Карты: <span id="hud-series-a" style="color:#fff; font-weight:bold;">0</span></div>
+                </div>
+            </div>
+            
+            <div class="hud-center-panel" id="hud-map-bg">
+                <div id="hud-map-title" class="hud-map-label">MIRAGE</div>
+                <div id="hud-score-display" class="hud-score-text"><span id="hud-score-a">0</span> : <span id="hud-score-b">0</span></div>
+            </div>
+            
+            <div class="hud-team-block" style="text-align:right; flex-direction: row-reverse;">
+                <img id="hud-logo-b" src="" class="hud-logo" alt="">
+                <div>
+                    <div id="hud-name-b" style="font-weight:900; font-size:22px; font-family:'Orbitron';">Team B</div>
+                    <div style="font-size:13px; color:var(--text-muted); margin-top:4px;">Карты: <span id="hud-series-b" style="color:#fff; font-weight:bold;">0</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div style="display:flex; gap:20px; margin-bottom:25px;">
+            <button style="flex:1; background:#1c202e; padding:16px;" onclick="setMatchTactic('eco')">💰 Эко-раунд</button>
+            <button id="btn-pause-match" style="flex:1; background:#2c1c3a; color:var(--accent-cyan); padding:16px;" onclick="toggleMatchPause()">⏸️ Тактическая пауза</button>
+            <button id="btn-speed-match" style="flex:1; background:#1c202e; padding:16px;" onclick="toggleMatchSpeed()">⏩ Ускорить x2</button>
+            <button style="flex:1; background:#1c202e; padding:16px;" onclick="setMatchTactic('rush')">🏹 Быстрый Раш</button>
+        </div>
+
+        <div class="match-grid-container">
+            <div class="panel" style="padding:20px;">
+                <h4 style="margin:0 0 15px 0; color:var(--accent-cyan); font-family:'Orbitron'; font-size:16px;">Наш состав</h4>
+                <div id="m-players-a"></div>
+            </div>
+            <div class="console-logs" id="match-console"></div>
+            <div class="panel" style="padding:20px;">
+                <h4 style="margin:0 0 15px 0; color:var(--accent-orange); text-align:right; font-family:'Orbitron'; font-size:16px;">Оппонент</h4>
+                <div id="m-players-b"></div>
+            </div>
+        </div>
+        <button id="btn-finish-match" style="display:none; width:100%; padding:18px; margin-top:25px; font-size:14px;" onclick="closeMatchAndOpenPress()">Перейти к интервью</button>
+    </div>
+</div>
+
+<div id="screen-press" class="screen">
+    <div class="veto-box">
+        <h2>🎤 Интервью СМИ</h2>
+        <p id="press-question" style="font-style:italic; margin-bottom:25px; font-size:16px;"></p>
+        <div style="display:flex; flex-direction:column; gap:12px;" id="press-options"></div>
+    </div>
+</div>
+
+<script>
+const LOGOS = {
+    Vitality: "Team_Vitality.png", NAVI: "Navi-Logo.png", Spirit: "Team_Spirit.png",
+    Paravision: "PARIVISION.png", FUT: "FUT.png", Falcons: "Falcons.png",
+    Furia: "Furia.png", Aurora: "Aur.png", Mongolz: "Mongolz.png",
+    Astralis: "Astralis.png", MOUZ: "mouz.png", G2: "G2.png",
+    GL: "GamerLegion.png", Legacy: "Legacy.png",
+    FaZe: "FaZe.png", VP: "Virtus.pro.png", Liquid: "Liquid.png", Complexity: "Complexity.png" // эти оставим в кэше
+};
+
+const AVATARS = {
+    "b1t": "b1t.png", "jl": "jL.png", "im": "iM.png", "w0nderful": "w0nderful.png", "aleksib": "Aleksib.png",
+    "ropz": "ropz.png", "broky": "BROKY1.png", "frozen": "frozen.png", "rain": "rain.png", "karrigan": "karrigan.png",
+    "donk": "donk.png", "sh1ro": "sh1ro.png", "chopper": "Chopper.png", "magixx": "Magixx.png", "zont1x": "zont1x.png",
+    "m0nesy": "m0NESY.png", "niko": "niko.png", "hunter": "hunter.png", "snax": "Snax.png", "malbsmd": "malsbsmd.png",
+    "s1mple": "S1mple.png", "dupreeh": "dupreeh.png", "magisk": "magisk.png", "maden": "maden.png", "snappi": "snappi.png",
+    "fallen": "fallen.png", "kscerato": "kscerato.png", "yuurih": "yuurih.png", "chelo": "chelo.png", "skullz": "skullz.png",
+    "lack1": "lack1.png", "kensi": "kensi.png", "norwi": "norwi.png", "deko": "deko.png", "r3salt": "r3salt.png",
+    "jerry": "jerry.png", "artfr0st": "artfrost.png", "qikert": "qikert.png", "patsi": "patsi.png", "fl4mus": "fl4mus.png",
+    "jame": "kame.png", "fl1t": "fl1t.png", "fame": "fame.png", "n0rb3r7": "n0rb3r7.png", "electronic": "elic.png",
+    "torzsi": "torzsi.png", "xertion": "xertion.png", "xelex": "xelex.png", "siuhy": "siuhy.png", "jimpphat": "jimpphat.png", "brollan": "brollan.png",
+    "twistzz": "twistzz.png", "naf": "naf.png", "yekindar": "yekindar.png", "ultimate": "ultimate.png", "jks": "jks.png",
+    "elige": "elige.png", "jt": "jt.png", "grim": "grim.png", "floppy": "floppy.png", "hallzerk": "hallzerk.png",
+    "zywoo": "Zywoo.png", "apex": "apEX.png", "spinx": "Spinx.png", "flamez": "flamez.png", "mezii": "mezil.png",
+    "perfecto": "perfecto.png", "nafany": "nafany.png", "degster": "degster.png", "smooya": "smooya.png", "aunkere": "aunkere.png",
+    "fear": "fear.png", "makazze": "makazze.png", "tN1R": "tN1r.png", "BELCHONOKK": "belchonokk.png", "xiELO": "xielo.png", 
+    "nota": "nota.png", "zweih": "zweih.png", "kyousuke": "kyousuke.png", "molodoy": "molodoy.png", "soulfly": "soulfly.png", 
+    "mzinho": "mzinho.png", "senzu": "senzu.png", "910": "910.png", "blitz": "blitz.png", "techno": "techno.png",
+    "hooxi": "hooxi.png", "phzy": "phzy.png", "jabbi": "jabbi.png", "staehr": "staehr.png", "ryu": "ryu.png",
+    "dem0n": "dem0n.png", "launx": "launx.png", "krabeni": "krabeni.png", "cmtry": "cmtry.png", "dziugss": "dziugss.png",
+    "XANTARES": "xantares.png", "woxic": "woxic.png", "MAJ3R": "maj3r.png", "Wicadia": "wicadia.png", "HeavyGod": "heavygod.png", 
+    "hades": "hades.png", "imoRR": "imorr.png", "xfl0ud": "xfl0ud.png", "jottAAA": "jottaaa.png", "ztr": "ztr.png", 
+    "REZ": "rez.png", "saadzin": "saadzin.png", "lux": "lux.png", "n1ssim": "n1ssim.png", "TeSeS": "teses.png", "kyxsan": "kyxsan.png",  
+
+    // Дубликаты в нижнем регистре на случай несовпадения шрифтов в массивах команд
+    "tn1r": "tN1r.png", "belchonokk": "belchonokk.png", "xielo": "xielo.png", "heavygod": "heavygod.png", 
+    "xantares": "xantares.png", "maj3r": "maj3r.png", "wicadia": "wicadia.png", "imorr": "imorr.png", 
+    "jottaaa": "jottaaa.png", "rez": "rez.png", "malbsmd": "malsbsmd.png",
+    "teses": "teses.png", "kyxsan": "kyxsan.png", "nota": "nota.png", "zweih": "zweih.png", "soulfly": "soulfly.png", "woxic": "woxic.png",
+    "default": "https://liquipedia.net/commons/images/a/a2/No_avatar.png"
+};
+
+const MAP_IMAGES = {
+    "Mirage": "mirage.png", "Inferno": "inferno.png", "Nuke": "nuke.png", 
+    "Ancient": "ancient.png", "Anubis": "anubis.png", "Dust 2": "dust2.png", "Vertigo": "vertigo.png"
+};
+
+function getPlayerAvatar(name) {
+    if(!name) return AVATARS['default'];
+    let cleanName = name.toString().trim().toLowerCase();
+    return AVATARS[cleanName] || AVATARS['default'];
+}
+
+// ГЛОБАЛЬНЫЕ ДАННЫЕ ОРГАНИЗАЦИЙ И РОСТЕРОВ (ВСЕ 14 КОМАНД)
+let teamsData = [
+    { id: "vitality", name: "Team Vitality", logo: LOGOS.Vitality, skill: 93, form: 96, points: 1000, roster: [
+        { name: "apEX", skill: 85, moral: 92, role: "IGL", matches: 215, kd: "0.98", salary: 6500 },
+        { name: "ZywOo", skill: 97, moral: 95, role: "AWPer", matches: 190, kd: "1.32", salary: 11500 },
+        { name: "ropz", skill: 91, moral: 90, role: "Lurker", matches: 180, kd: "1.17", salary: 9000 },
+        { name: "flameZ", skill: 89, moral: 90, role: "Entry", matches: 110, kd: "1.12", salary: 5800 },
+        { name: "mezii", skill: 84, moral: 88, role: "Support", matches: 95, kd: "1.01", salary: 4900 }
+    ]},
+    { id: "navi", name: "Natus Vincere", logo: LOGOS.NAVI, skill: 91, form: 94, points: 880, roster: [
+        { name: "Aleksib", skill: 86, moral: 95, role: "IGL", matches: 75, kd: "1.04", salary: 7500 },
+        { name: "b1t", skill: 91, moral: 92, role: "Rifler", matches: 165, kd: "1.16", salary: 8500 },
+        { name: "w0nderful", skill: 92, moral: 93, role: "AWPer", matches: 80, kd: "1.24", salary: 8000 },
+        { name: "iM", skill: 88, moral: 90, role: "Rifler", matches: 85, kd: "1.10", salary: 6800 },
+        { name: "makazze", skill: 84, moral: 88, role: "Rifler", matches: 45, kd: "1.07", salary: 4000 }
+    ]},
+    { id: "spirit", name: "Team Spirit", logo: LOGOS.Spirit, skill: 91, form: 91, points: 795, roster: [
+        { name: "chopper", skill: 83, moral: 90, role: "IGL", matches: 125, kd: "0.99", salary: 5500 },
+        { name: "donk", skill: 97, moral: 94, role: "Rifler", matches: 100, kd: "1.35", salary: 11500 },
+        { name: "sh1ro", skill: 94, moral: 90, role: "AWPer", matches: 120, kd: "1.27", salary: 9500 },
+        { name: "zont1x", skill: 87, moral: 86, role: "Rifler", matches: 95, kd: "1.07", salary: 5200 },
+        { name: "magixx", skill: 84, moral: 91, role: "Anchor", matches: 135, kd: "1.01", salary: 4800 }
+    ]},
+    { id: "paravision", name: "PARIVISION", logo: LOGOS.Paravision, skill: 85, form: 95, points: 690, roster: [
+        { name: "Jame", skill: 87, moral: 90, role: "IGL/AWP", matches: 195, kd: "1.11", salary: 6500 },
+        { name: "BELCHONOKK", skill: 85, moral: 89, role: "Rifler", matches: 80, kd: "1.12", salary: 4600 },
+        { name: "xiELO", skill: 84, moral: 86, role: "Entry", matches: 65, kd: "1.06", salary: 4200 },
+        { name: "nota", skill: 83, moral: 87, role: "Rifler", matches: 70, kd: "1.04", salary: 4100 },
+        { name: "zweih", skill: 82, moral: 85, role: "Support", matches: 50, kd: "1.01", salary: 3800 }
+    ]},
+    { id: "fut", name: "FUT Esports", logo: LOGOS.FUT, skill: 85, form: 92, points: 610, roster: [
+        { name: "dem0n", skill: 84, moral: 90, role: "IGL", matches: 180, kd: "1.02", salary: 5200 },
+        { name: "lauNX", skill: 86, moral: 88, role: "AWPer", matches: 170, kd: "1.12", salary: 5600 },
+        { name: "Krabeni", skill: 83, moral: 86, role: "Entry", matches: 135, kd: "1.05", salary: 4500 },
+        { name: "cmtry", skill: 82, moral: 85, role: "Rifler", matches: 120, kd: "1.03", salary: 4300 },
+        { name: "dziugss", skill: 81, moral: 84, role: "Support", matches: 90, kd: "0.98", salary: 4000 }
+    ]},
+    { id: "falcons", name: "Team Falcons", logo: LOGOS.Falcons, skill: 92, form: 83, points: 540, roster: [
+        { name: "kyxsan", skill: 83, moral: 88, role: "IGL", matches: 95, kd: "0.97", salary: 5000 },
+        { name: "m0NESY", skill: 97, moral: 96, role: "AWPer", matches: 135, kd: "1.32", salary: 11000 },
+        { name: "NiKo", skill: 92, moral: 84, role: "Rifler", matches: 180, kd: "1.19", salary: 10000 },
+        { name: "TeSeS", skill: 84, moral: 87, role: "Rifler", matches: 190, kd: "1.04", salary: 5200 },
+        { name: "kyousuke", skill: 83, moral: 89, role: "Entry", matches: 50, kd: "1.05", salary: 3900 }
+    ]},
+    { id: "furia", name: "FURIA Esports", logo: LOGOS.Furia, skill: 85, form: 84, points: 490, roster: [
+        { name: "FalleN", skill: 82, moral: 95, role: "IGL/AWP", matches: 405, kd: "1.02", salary: 5800 },
+        { name: "KSCERATO", skill: 89, moral: 88, role: "Rifler", matches: 210, kd: "1.19", salary: 7000 },
+        { name: "yuurih", skill: 85, moral: 87, role: "Rifler", matches: 205, kd: "1.08", salary: 5600 },
+        { name: "YEKINDAR", skill: 84, moral: 81, role: "Entry", matches: 175, kd: "1.05", salary: 6200 },
+        { name: "molodoy", skill: 81, moral: 86, role: "Support", matches: 40, kd: "0.99", salary: 3600 }
+    ]},
+    { id: "aurora", name: "Aurora Gaming", logo: LOGOS.Aurora, skill: 86, form: 86, points: 430, roster: [
+        { name: "MAJ3R", skill: 81, moral: 90, role: "IGL", matches: 190, kd: "0.95", salary: 4000 },
+        { name: "XANTARES", skill: 91, moral: 88, role: "Rifler", matches: 210, kd: "1.22", salary: 7500 },
+        { name: "woxic", skill: 86, moral: 84, role: "AWPer", matches: 180, kd: "1.10", salary: 5500 },
+        { name: "Wicadia", skill: 84, moral: 86, role: "Rifler", matches: 85, kd: "1.07", salary: 4400 },
+        { name: "soulfly", skill: 83, moral: 85, role: "Entry", matches: 90, kd: "1.04", salary: 4100 }
+    ]},
+    { id: "mongolz", name: "The MongolZ", logo: LOGOS.Mongolz, skill: 86, form: 88, points: 385, roster: [
+        { name: "bLitz", skill: 86, moral: 93, role: "IGL", matches: 115, kd: "1.08", salary: 4200 },
+        { name: "Techno", skill: 83, moral: 89, role: "Rifler", matches: 120, kd: "1.03", salary: 3900 },
+        { name: "910", skill: 86, moral: 92, role: "AWPer", matches: 110, kd: "1.14", salary: 4600 },
+        { name: "Senzu", skill: 85, moral: 88, role: "Rifler", matches: 100, kd: "1.09", salary: 4300 },
+        { name: "mzinho", skill: 84, moral: 90, role: "Lurker", matches: 105, kd: "1.05", salary: 4000 }
+    ]},
+    { id: "astralis", name: "Astralis", logo: LOGOS.Astralis, skill: 85, form: 80, points: 340, roster: [
+        { name: "HooXi", skill: 87, moral: 86, role: "AWPer", matches: 180, kd: "1.12", salary: 7000 },
+        { name: "phzy", skill: 86, moral: 88, role: "IGL", matches: 170, kd: "1.08", salary: 6600 },
+        { name: "jabbi", skill: 85, moral: 82, role: "Rifler", matches: 140, kd: "1.06", salary: 5400 },
+        { name: "Staehr", skill: 83, moral: 84, role: "Support", matches: 105, kd: "1.02", salary: 4500 },
+        { name: "ryu", skill: 84, moral: 85, role: "Entry", matches: 130, kd: "1.04", salary: 5000 }
+    ]},
+    { id: "mouz", name: "MOUZ", logo: LOGOS.MOUZ, skill: 88, form: 79, points: 295, roster: [
+        { name: "torzsi", skill: 88, moral: 85, role: "AWPer", matches: 120, kd: "1.12", salary: 6200 },
+        { name: "Spinx", skill: 89, moral: 86, role: "Lurker", matches: 115, kd: "1.13", salary: 6400 },
+        { name: "jL", skill: 87, moral: 84, role: "IGL", matches: 95, kd: "1.05", salary: 5600 },
+        { name: "xertioN", skill: 87, moral: 86, role: "Entry", matches: 110, kd: "1.11", salary: 6000 },
+        { name: "xelex", skill: 86, moral: 85, role: "Rifler", matches: 100, kd: "1.08", salary: 5800 }
+    ]},
+    { id: "g2", name: "G2 Esports", logo: LOGOS.G2, skill: 86, form: 76, points: 260, roster: [
+        { name: "Snax", skill: 82, moral: 85, role: "IGL", matches: 70, kd: "0.96", salary: 5000 },
+        { name: "hades", skill: 85, moral: 86, role: "AWPer", matches: 115, kd: "1.08", salary: 4800 },
+        { name: "huNter-", skill: 86, moral: 85, role: "Rifler", matches: 175, kd: "1.05", salary: 6200 },
+        { name: "malbsMd", skill: 89, moral: 90, role: "Entry", matches: 65, kd: "1.14", salary: 6000 },
+        { name: "HeavyGod", skill: 85, moral: 88, role: "Rifler", matches: 70, kd: "1.10", salary: 4600 }
+    ]},
+    { id: "gl", name: "GamerLegion", logo: LOGOS.GL, skill: 83, form: 84, points: 210, roster: [
+        { name: "ztr", skill: 81, moral: 86, role: "IGL", matches: 90, kd: "0.97", salary: 3400 },
+        { name: "sl3nd", skill: 85, moral: 87, role: "AWPer", matches: 75, kd: "1.12", salary: 4000 },
+        { name: "REZ", skill: 85, moral: 82, role: "Rifler", matches: 210, kd: "1.08", salary: 5000 },
+        { name: "Tauson", skill: 81, moral: 85, role: "Support", matches: 60, kd: "0.99", salary: 3200 },
+        { name: "PR", skill: 82, moral: 84, role: "Rifler", matches: 45, kd: "1.03", salary: 3300 }
+    ]},
+    { id: "legacy", name: "Legacy", logo: LOGOS.Legacy, skill: 82, form: 85, points: 175, roster: [
+        { name: "NEKIZ", skill: 80, moral: 90, role: "IGL", matches: 110, kd: "0.98", salary: 3100 },
+        { name: "saadzin", skill: 84, moral: 88, role: "AWPer", matches: 70, kd: "1.13", salary: 4200 },
+        { name: "dumau", skill: 83, moral: 86, role: "Rifler", matches: 95, kd: "1.08", salary: 3600 },
+        { name: "latto", skill: 81, moral: 83, role: "Support", matches: 115, kd: "1.01", salary: 3300 },
+        { name: "lux", skill: 82, moral: 85, role: "Rifler", matches: 80, kd: "1.04", salary: 3500 }
+    ]}
+];
+
+// Пул свободных агентов и звезд для трансферов
+let marketPlayers = {
+    stars: [
+        { name: "degster", skill: 87, price: 540000, salary: 7500, role: "AWPer", org: "Heroic" },
+        { name: "smooya", skill: 84, price: 550000, salary: 4000, role: "AWPer", org: "Into The Breach" }
+    ],
+    faceit: [
+        { name: "aunkere", skill: 79, price: 18000, salary: 1500, role: "Rifler", org: "Свободный агент" },
+        { name: "fear", skill: 80, price: 22000, salary: 1800, role: "IGL", org: "Свободный агент" },
+        { name: "nafany", skill: 81, price: 35000, salary: 2800, role: "IGL", org: "BetBoom" }
+    ]
+};
+
+// СОСТОЯНИЕ ИГРЫ
+let myTeam = null;
+let currentTab = "hub";
+let currentMarketTab = "stars";
+let clubBalance = 120000;
+let teamChemistry = 75;
+let currentSponsor = null;
+let boughtUpgrades = { monitors: false, psychologist: false, media: false };
+
+let playoffTeams = [];
+let bracketMatches = { semi1: null, semi2: null, final: null };
+let currentOpponentTeam = null;
+
+let mapsPool = ["Mirage", "Inferno", "Nuke", "Ancient", "Anubis", "Dust 2", "Vertigo"];
+let vetoStage = 0; 
+let vetoActiveMaps = [];
+let matchMaps = []; 
+let currentMapIdx = 0;
+
+let scoreA = 0, scoreB = 0;
+let seriesScoreA = 0, seriesScoreB = 0;
+let matchPause = false;
+let currentTactic = "normal";
+let logsTimer = null;
+let logLinesCounter = 0;
+
+let activeKickingIndex = -1;
+
+let transferCooldown = 120000; // 2 минуты
+const TEAM_ROSTER_LIMIT = 5;
+const MIN_ROSTER_SIZE = 5;
+let matchSpeed = 1;
+let transferActivityTimer = null;
+let seasonRestartTimer = null;
+let seasonRestartInterval = null;
+let bracketAutoRestarted = false;
+
+// Флаг последнего трансфера для каждой команды
+teamsData.forEach(t => { if(typeof t.lastTransferTime === 'undefined') t.lastTransferTime = 0; });
+
+// ИНИЦИАЛИЗАЦИЯ И СТАРТ
+window.onload = function() {
+    renderSelectScreen();
+    generateTwitterFeed();
+    startTransferMarketSimulation();
+};
+
+function goScreen(id) {
+    document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
+    window.scrollTo(0,0);
+}
+
+function renderSelectScreen() {
+    let container = document.getElementById("select-teams-list");
+    container.innerHTML = "";
+    teamsData.forEach(t => {
+        container.innerHTML += `
+            <div class="team-select-card" onclick="selectTeam('${t.id}')">
+                <img src="${t.logo}" class="team-logo-img" onerror="this.src='https://liquipedia.net/commons/images/a/a2/No_avatar.png'">
+                <h3 style="margin:10px 0 5px 0; font-size:19px;">${t.name}</h3>
+                <div style="font-size:13px; color:var(--text-muted); font-family:'JetBrains Mono';">Рейтинг HLTV: #${teamsData.indexOf(t)+1}</div>
+                <div style="font-size:12px; margin-top:10px; color:var(--accent-cyan);">Состав: ${t.roster.map(p=>p.name).join(', ')}</div>
+            </div>
+        `;
+    });
+}
+
+function selectTeam(id) {
+    myTeam = teamsData.find(t => t.id === id);
+    document.getElementById("my-team-name").innerText = myTeam.name;
+    document.getElementById("my-team-logo").src = myTeam.logo;
+    document.getElementById("my-team-logo").style.display = "block";
+    
+    updateHUD();
+    renderRoster();
+    goScreen("screen-main");
+}
+
+function updateHUD() {
+    document.getElementById("balance-txt").innerText = clubBalance.toLocaleString() + " $";
+    document.getElementById("chem-txt").innerText = teamChemistry + "%";
+    document.getElementById("sponsor-txt").innerText = currentSponsor ? currentSponsor.name : "Нет соглашения";
+}
+
+// РЕНДЕРИНГ СОСТАВА И УВОЛЬНЕНИЯ ИГРОКОВ
+function renderRoster() {
+    let list = document.getElementById("roster-list");
+    list.innerHTML = "";
+    myTeam.roster.forEach((p, idx) => {
+        list.innerHTML += `
+            <div class="player-card">
+                <div class="p-info">
+                    <img src="${getPlayerAvatar(p.name)}" class="p-avatar-img" onerror="this.src='https://liquipedia.net/commons/images/a/a2/No_avatar.png'">
+                    <div>
+                        <div class="p-name">${p.name}</div>
+                        <div class="p-meta">Роль: ${p.role} | Матчей: ${p.matches} | K/D: ${p.kd}</div>
+                    </div>
+                </div>
+                <div style="display:flex; align-items:center; gap:25px;">
+                    <div class="p-badge">🔥 Скилл: ${p.skill}</div>
+                    <div class="p-badge" style="color:#ffaa00; border-color:rgba(255,170,0,0.1);">😊 Мораль: ${p.moral}%</div>
+                    <button onclick="openKickModal(${idx})" style="background:var(--red-alert); padding:8px 14px; font-size:11px;">Кикнуть</button>
+                </div>
+            </div>
+        `;
+    });
+}
+
+function openKickModal(idx) {
+    activeKickingIndex = idx;
+    document.getElementById("kick-modal").style.display = "flex";
+}
+function closeKickModal() {
+    document.getElementById("kick-modal").style.display = "none";
+}
+
+function confirmKick(reason) {
+    if(activeKickingIndex === -1) return;
+    if(myTeam.roster.length <= MIN_ROSTER_SIZE) {
+        alert(`Нельзя выгнать игрока: в команде должно оставаться ровно ${TEAM_ROSTER_LIMIT} игроков.`);
+        return;
+    }
+    let kickedPlayer = myTeam.roster[activeKickingIndex];
+    
+    if(reason === 'toxic') {
+        teamChemistry = Math.min(100, teamChemistry + 15);
+        addTweet("HLTV Inside", `⚠️ Скандал! ${myTeam.name} выгнали ${kickedPlayer.name} за ужасный токсик в дискорде! Атмосфера в клубе очищена.`);
+    } else if(reason === 'low_kd') {
+        teamChemistry = Math.max(0, teamChemistry - 5);
+        addTweet("OverDrive", `📉 Трансферные новости: ${kickedPlayer.name} покидает основной состав ${myTeam.name} из-за плохой личной статистики на последних праках.`);
+    } else if(reason === 'regime') {
+        clubBalance = Math.max(0, clubBalance - 5000);
+        addTweet("CS2 Хайп", `🍺 Ого! Инсайдеры сообщают, что ${kickedPlayer.name} был пойман в баре перед игрой! Менеджер оштрафовал и уволил игрока.`);
+    }
+
+    myTeam.roster.splice(activeKickingIndex, 1);
+    activeKickingIndex = -1;
+    closeKickModal();
+    renderRoster();
+    updateHUD();
+}
+
+// ВКЛАДКИ ГЛАВНОГО МЕНЮ
+function switchMainTab(tab) {
+    currentTab = tab;
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".main-sub-tab").forEach(t => t.style.display = "none");
+    
+    if(tab === 'hub') {
+        document.getElementById("main-tab-hub").classList.add("active");
+        document.getElementById("sub-tab-hub").style.display = "block";
+    } else if(tab === 'market') {
+        document.getElementById("main-tab-market").classList.add("active");
+        document.getElementById("sub-tab-market").style.display = "block";
+        renderMarket();
+    } else if(tab === 'hltv') {
+        document.getElementById("main-tab-hltv").classList.add("active");
+        document.getElementById("sub-tab-hltv").style.display = "block";
+        renderHLTV();
+    } else if(tab === 'bet') {
+        document.getElementById("main-tab-bet").classList.add("active");
+        document.getElementById("sub-tab-bet").style.display = "block";
+        renderSponsors();
+    } else if(tab === 'manage') {
+        document.getElementById("main-tab-manage").classList.add("active");
+        document.getElementById("sub-tab-manage").style.display = "block";
+        renderManagePanel();
+    }
+}
+
+// СИСТЕМЫ СУБ-ВКЛАДОК: СУПЕР-АПКЕЙТЫ БАЗЫ
+function buyUpgrade(type) {
+    if(type === 'monitors' && !boughtUpgrades.monitors) {
+        if(clubBalance >= 25000) {
+            clubBalance -= 25000; boughtUpgrades.monitors = true;
+            myTeam.roster.forEach(p => p.skill += 2);
+            document.getElementById("up-monitors").disabled = true;
+            document.getElementById("up-monitors").innerText = "🖥️ Мониторы куплены (+2 Скилл)";
+            renderRoster(); updateHUD();
+        } else alert("Недостаточно денег!");
+    }
+    if(type === 'psychologist' && !boughtUpgrades.psychologist) {
+        if(clubBalance >= 30000) {
+            clubBalance -= 30000; boughtUpgrades.psychologist = true;
+            myTeam.roster.forEach(p => p.moral = Math.min(100, p.moral + 20));
+            document.getElementById("up-psychologist").disabled = true;
+            document.getElementById("up-psychologist").innerText = "🧠 Психолог нанят (Мораль стабильна)";
+            renderRoster(); updateHUD();
+        } else alert("Недостаточно денег!");
+    }
+    if(type === 'media' && !boughtUpgrades.media) {
+        if(clubBalance >= 40000) {
+            clubBalance -= 40000; boughtUpgrades.media = true;
+            document.getElementById("up-media").disabled = true;
+            document.getElementById("up-media").innerText = "📱 Медиастудия запущена (+30% прибыли)";
+            updateHUD();
+        } else alert("Недостаточно денег!");
+    }
+}
+
+function buyBootcamp() {
+    if(clubBalance >= 15000) {
+        clubBalance -= 15000;
+        teamChemistry = Math.min(100, teamChemistry + 10);
+        addTweet("Bootcamp Live", `📸 Игроки прилетели на буткемп! Командные связи улучшаются с каждым днем.`);
+        updateHUD();
+    } else alert("Не хватает на буткемп!");
+}
+
+// ЛЕНТА ТВИДОВ / СОЦСЕТИ
+function generateTwitterFeed() {
+    let tw = document.getElementById("twitter-feed");
+    tw.innerHTML = "";
+    addTweet("HLTV.org", "🏆 Жеребьевка PGL Major завершена! Все команды готовы к плей-офф.");
+    addTweet("harumi", "⚡ По слухам, некоторые организации подпишут жестких свободных агентов прямо сегодня.");
+    addTweet("Фанаты CS2", "Скорее бы уже начались игры! Сетка обещает быть горячей.");
+}
+function addTweet(author, text) {
+    let tw = document.getElementById("twitter-feed");
+    if(!tw) return;
+    tw.innerHTML = `<div class="tweet-entry" onclick="openCommentPopup('${author}', '${text.replace(/'/g, "\\'")}')"><span class="tweet-author">@${author}:</span> ${text}</div>` + tw.innerHTML;
+}
+
+// КЛИК НА ТВИТ — МОДАЛЬНОЕ ОКНО HLTV КОММЕНТАРИЕВ И ФОРУМА
+function openCommentPopup(author, text) {
+    document.getElementById("popup-author").innerText = "@" + author;
+    document.getElementById("popup-text").innerText = text;
+    
+    const randomOpinions = [
+        "«Полный бред, автор не понимает о чем пишет... Кикайте тренера лучше!»",
+        "«Парни, скриньте, этот ростер возьмет кубок без единой отданной карты!»",
+        "«Коэффициенты на них жестко просели после этой инфы. Ставлю хату на некст матч.»",
+        "«Опять решаффлы, сколько можно? Дайте составу поиграть полгода вместе!»",
+        "«Менеджмент гении, вовремя слили балласт. Ждем красивый CS на трансляции.»"
+    ];
+    let rIdx = Math.floor(Math.random() * randomOpinions.length);
+    document.getElementById("popup-fan-opinion").innerText = randomOpinions[rIdx];
+    
+    document.getElementById("comment-popup-modal").style.display = "flex";
+}
+function closeCommentPopup() {
+    document.getElementById("comment-popup-modal").style.display = "none";
+}
+
+// ТРАНСФЕРЫ
+function setMarketTab(tab) {
+    currentMarketTab = tab;
+    document.getElementById("btn-t-stars").classList.remove("active");
+    document.getElementById("btn-t-faceit").classList.remove("active");
+    if(tab === 'stars') document.getElementById("btn-t-stars").classList.add("active");
+    else document.getElementById("btn-t-faceit").classList.add("active");
+    renderMarket();
+}
+
+function renderMarket() {
+    let list = document.getElementById("market-list");
+    list.innerHTML = "";
+    let players = marketPlayers[currentMarketTab];
+    let marketLocked = !myTeam || myTeam.roster.length >= TEAM_ROSTER_LIMIT || (myTeam && Date.now() - myTeam.lastTransferTime < transferCooldown);
+    let statusText = document.getElementById("market-status");
+    if(statusText) statusText.innerText = myTeam ? getTransferCooldownText(myTeam) : "Сначала выберите команду для управления, чтобы открывать трансферы.";
+    players.forEach((p, idx) => {
+        list.innerHTML += `
+            <div class="player-card">
+                <div class="p-info">
+                    <img src="${getPlayerAvatar(p.name)}" class="p-avatar-img" onerror="this.src='https://liquipedia.net/commons/images/a/a2/No_avatar.png'">
+                    <div>
+                        <div class="p-name">${p.name}</div>
+                        <div class="p-meta">Роль: ${p.role} | Клуб: ${p.org}</div>
+                    </div>
+                </div>
+                <div style="display:flex; align-items:center; gap:20px;">
+                    <div class="p-badge">⚡ Скилл: ${p.skill}</div>
+                    <div class="p-badge" style="color:var(--green-money); border-color:rgba(0,255,102,0.1);">Цена: $${p.price.toLocaleString()}</div>
+                    <button onclick="buyPlayer('${currentMarketTab}', ${idx})" ${marketLocked ? 'disabled' : ''}>${marketLocked ? 'Закупка недоступна' : 'Контракт'}</button>
+                </div>
+            </div>
+        `;
+    });
+}
+
+function buyPlayer(tab, idx) {
+    if(!myTeam) {
+        alert("Сначала выберите команду для управления.");
+        return;
+    }
+    if(Date.now() - myTeam.lastTransferTime < transferCooldown) {
+        alert("Трансферное окно ещё закрыто. Подождите несколько секунд.");
+        return;
+    }
+    if(myTeam.roster.length >= TEAM_ROSTER_LIMIT) {
+        alert(`В составе уже есть ${TEAM_ROSTER_LIMIT} игроков! Сначала кикните кого-то из основы.`);
+        return;
+    }
+    let p = marketPlayers[tab][idx];
+    if(clubBalance >= p.price) {
+        clubBalance -= p.price;
+        marketPlayers[tab].splice(idx, 1);
+        myTeam.roster.push({
+            name: p.name,
+            skill: p.skill,
+            moral: 90,
+            role: p.role,
+            matches: 0,
+            kd: "1.00"
+        });
+        myTeam.lastTransferTime = Date.now();
+        teamChemistry = Math.max(20, teamChemistry - 15); // Приход нового сбивает сыгранность
+        addTweet("HLTV Transfer", `🔥 Срочно! Игрок ${p.name} официально подписан клубом ${myTeam.name}! Болельщики в экстазе.`);
+        updateHUD();
+        renderMarket();
+        renderRoster();
+        renderManagePanel();
+    } else {
+        alert("Недостаточно средств на выкуп игрока!");
+    }
+}
+
+function getTransferOfferPrice(p) {
+    return Math.max(12000, Math.round(p.skill * 700 + (p.salary || 3000) * 8));
+}
+
+function canTeamTransfer(team) {
+    return !team || Date.now() - team.lastTransferTime >= transferCooldown;
+}
+
+function sellPlayer(idx) {
+    if(!myTeam) {
+        alert("Сначала выберите команду для управления.");
+        return;
+    }
+    if(myTeam.roster.length <= MIN_ROSTER_SIZE) {
+        alert(`Нельзя продать игрока. В команде должно оставаться ровно ${TEAM_ROSTER_LIMIT} игроков.`);
+        return;
+    }
+    if(Date.now() - myTeam.lastTransferTime < transferCooldown) {
+        alert("Трансферное окно ещё закрыто. Подождите несколько секунд.");
+        return;
+    }
+
+    let p = myTeam.roster[idx];
+    let price = getTransferOfferPrice(p);
+    let tab = p.skill >= 85 ? 'stars' : 'faceit';
+    marketPlayers[tab].push({
+        name: p.name,
+        skill: p.skill,
+        price: price,
+        salary: p.salary || 4000,
+        role: p.role,
+        org: myTeam.name
+    });
+    myTeam.roster.splice(idx, 1);
+    myTeam.lastTransferTime = Date.now();
+    clubBalance += price;
+    teamChemistry = Math.max(0, teamChemistry - 10);
+    addTweet("Transfer News", `💼 ${myTeam.name} выставил ${p.name} на трансфер за $${price.toLocaleString()}. Бюджет клуба пополнился.`);
+    updateHUD();
+    renderMarket();
+    renderRoster();
+    renderManagePanel();
+}
+
+function getTransferCooldownText(team) {
+    if(!team || Date.now() - team.lastTransferTime >= transferCooldown) return "Трансферное окно открыто.";
+    let remaining = Math.ceil((transferCooldown - (Date.now() - team.lastTransferTime)) / 1000);
+    return `До следующего трансфера осталось ${remaining} сек.`;
+}
+
+function startTransferMarketSimulation() {
+    if(transferActivityTimer) clearInterval(transferActivityTimer);
+    transferActivityTimer = setInterval(() => {
+        teamsData.forEach(t => {
+            if(myTeam && t.id === myTeam.id) return;
+            if(!canTeamTransfer(t)) return;
+            if(Math.random() > 0.35) return;
+
+            if(t.roster.length > MIN_ROSTER_SIZE && Math.random() < 0.55) {
+                aiSellFromTeam(t);
+            } else if(t.roster.length < TEAM_ROSTER_LIMIT && (marketPlayers.faceit.length + marketPlayers.stars.length > 0)) {
+                aiBuyToTeam(t);
+            }
+        });
+        renderMarket();
+    }, 23000);
+}
+
+function aiSellFromTeam(team) {
+    if(team.roster.length <= MIN_ROSTER_SIZE) return;
+    let idx = Math.floor(Math.random() * team.roster.length);
+    let p = team.roster[idx];
+    let price = getTransferOfferPrice(p);
+    let tab = p.skill >= 85 ? 'stars' : 'faceit';
+    marketPlayers[tab].push({
+        name: p.name,
+        skill: p.skill,
+        price: price,
+        salary: p.salary || 4000,
+        role: p.role,
+        org: team.name
+    });
+    team.roster.splice(idx, 1);
+    team.lastTransferTime = Date.now();
+    team.points = Math.max(0, team.points - 10);
+    addTweet("Transfer Rumors", `🚨 ${team.name} выставила ${p.name} на трансфер. Рынок стал жарче!`);
+}
+
+function aiBuyToTeam(team) {
+    let availableTabs = [...marketPlayers.faceit, ...marketPlayers.stars];
+    if(availableTabs.length === 0) return;
+    let tab = marketPlayers.faceit.length ? 'faceit' : 'stars';
+    let idx = Math.floor(Math.random() * marketPlayers[tab].length);
+    let p = marketPlayers[tab].splice(idx, 1)[0];
+    team.roster.push({
+        name: p.name,
+        skill: p.skill,
+        moral: 80 + Math.floor(Math.random() * 16),
+        role: p.role,
+        matches: 0,
+        kd: "1.00",
+        salary: p.salary || 4000
+    });
+    team.lastTransferTime = Date.now();
+    team.points += 8;
+    addTweet("Transfer Market", `🔁 ${team.name} подписала ${p.name} и усилила свой ростер.`);
+}
+
+// РЕЙТИНГ HLTV
+function renderHLTV() {
+    let body = document.getElementById("hltv-ranking-body");
+    body.innerHTML = "";
+    // Сортировка по очкам формы
+    let sorted = [...teamsData].sort((a,b) => b.points - a.points);
+    sorted.forEach((t, index) => {
+        let avgSkill = Math.round(t.roster.reduce((acc, p)=>acc+p.skill, 0) / t.roster.length) || t.skill;
+        let isMine = myTeam && t.id === myTeam.id;
+        body.innerHTML += `
+            <tr style="${isMine ? 'background:rgba(0,255,204,0.06); font-weight:bold;' : ''}">
+                <td style="padding:15px 12px; font-family:'JetBrains Mono'; color:${index<3?'var(--accent-orange)':'#fff'}">#${index+1}</td>
+                <td><img src="${t.logo}" style="width:25px; height:25px; object-fit:contain; margin-right:10px; vertical-align:middle;" onerror="this.src='https://liquipedia.net/commons/images/a/a2/No_avatar.png'">${t.name} ${isMine?'(Вы)':''}</td>
+                <td>${avgSkill}</td>
+                <td style="color:var(--accent-cyan); font-family:'JetBrains Mono';">${t.points} pts</td>
+            </tr>
+        `;
+    });
+}
+
+// СПОНСОРЫ И БУКМЕКЕРЫ
+const SPONSORS_LIST = [
+    { name: "BetBoom (Букмекер)", bonus: 60000, desc: "Огромный стартовый кэш, но фанаты в твиттере будут недовольны партнерством." },
+    { name: "Intel Gaming", bonus: 35000, desc: "Стабильный технологический спонсор. Поднимает репутацию организации." },
+    { name: "1XBet (Бетка)", bonus: 75000, desc: "Самый большой куш на рынке! Моментальное пополнение бюджета организации." },
+    { name: "Monster Energy", bonus: 25000, desc: "Обеспечивает команду энергетиками. Повышает медийность." }
+];
+
+function renderSponsors() {
+    let container = document.getElementById("sponsors-container");
+    container.innerHTML = "";
+    SPONSORS_LIST.forEach(s => {
+        let isCurrent = currentSponsor && currentSponsor.name === s.name;
+        container.innerHTML += `
+            <div style="background:var(--card-bg); border:1px solid ${isCurrent?'var(--accent-cyan)':'var(--border-color)'}; padding:25px; border-radius:14px; position:relative;">
+                <h3 style="margin-top:0; color:#fff;">${s.name}</h3>
+                <p style="font-size:13px; color:var(--text-muted); line-height:1.5; min-height:40px;">${s.desc}</p>
+                <div style="font-size:18px; font-weight:900; color:var(--green-money); margin-bottom:15px;">+$${s.bonus.toLocaleString()} сразу</div>
+                <button onclick="signSponsor('${s.name}', ${s.bonus})" ${currentSponsor || isCurrent ? 'disabled' : ''} style="width:100%; background:${isCurrent?'var(--accent-cyan)':'var(--accent-orange)'}; color:${isCurrent?'#000':'#fff'}">
+                    ${isCurrent ? 'Контракт подписан' : 'Заключить сделку'}
+                </button>
+            </div>
+        `;
+    });
+}
+
+function signSponsor(name, bonus) {
+    if(currentSponsor) return;
+    let modifier = boughtUpgrades.media ? 1.3 : 1.0;
+    let finalBonus = Math.round(bonus * modifier);
+    
+    currentSponsor = { name: name, bonus: finalBonus };
+    clubBalance += finalBonus;
+    
+    addTweet("HLTV Commercial", `🤝 Официально: Клуб ${myTeam.name} заключил партнерский контракт со спонсором ${name}! Сумма сделки составила $${finalBonus.toLocaleString()}.`);
+    updateHUD();
+    switchMainTab('hub');
+}
+
+// ГЕНЕРАЦИЯ СЕТКИ ПЛЕЙ-ОФФ (PGL MAJOR 2026)
+function generateTournamentBracket() {
+    if(myTeam.roster.length < TEAM_ROSTER_LIMIT) {
+        alert(`У вас неполный ростер! В команде должно быть ровно ${TEAM_ROSTER_LIMIT} игроков.`);
+        return;
+    }
+    
+    // Берем топ-4 команды рейтинга, включая команду игрока обязательно
+    let list = [...teamsData].filter(t => t.id !== myTeam.id && t.roster.length === TEAM_ROSTER_LIMIT);
+    if(list.length < 3) {
+        alert("Недостаточно команд с полным составом для создания турнира. Подождите, пока рынок стабилизируется.");
+        return;
+    }
+    // Перемешиваем и берем 3 случайных оппонента
+    list.sort(() => Math.random() - Math.random());
+    playoffTeams = [myTeam, list[0], list[1], list[2]];
+    
+    // Симулируем Полуфинал 2 (где нет игрока)
+    let t2 = playoffTeams[2];
+    let t3 = playoffTeams[3];
+    let s2_1 = Math.floor(Math.random()*2) + 1; // 1-2
+    let s2_2 = s2_1 === 2 ? Math.floor(Math.random()*2) : 2; 
+    if(s2_1 === s2_2) { s2_1 = 2; s2_2 = 1; }
+    
+    let semi2_winner = s2_1 > s2_2 ? t2 : t3;
+    
+    bracketMatches.semi1 = { teamA: myTeam, teamB: playoffTeams[1], scoreA: 0, scoreB: 0, simulated: false, winner: null };
+    bracketMatches.semi2 = { teamA: t2, teamB: t3, scoreA: s2_1, scoreB: s2_2, simulated: true, winner: semi2_winner };
+    bracketMatches.final = { teamA: null, teamB: semi2_winner, scoreA: 0, scoreB: 0, simulated: false, winner: null };
+    
+    currentOpponentTeam = playoffTeams[1]; // Наш первый враг в полуфинале
+    bracketAutoRestarted = false;
+    
+    renderBracketView();
+    goScreen("screen-bracket");
+}
+
+function renderBracketView() {
+    let view = document.getElementById("bracket-view");
+    view.innerHTML = "";
+    
+    // Полуфинал 1 (Наш матч)
+    let m1 = bracketMatches.semi1;
+    let m2 = bracketMatches.semi2;
+    let f = bracketMatches.final;
+    if(!f.teamA && m1.simulated && m1.winner && m1.winner.id !== myTeam.id) {
+        f.teamA = m1.winner;
+    }
+    
+    view.innerHTML += `<div class="stage-title">Полуфиналы (BO3)</div>`;
+    
+    // Node 1
+    view.innerHTML += `
+        <div class="bracket-match-node">
+            <div class="bracket-team-row">
+                <div class="b-team-info"><img src="${m1.teamA.logo}" class="b-team-logo" onerror="this.src='https://liquipedia.net/commons/images/a/a2/No_avatar.png'"> ${m1.teamA.name}</div>
+                <div class="b-score ${m1.simulated && m1.winner.id===m1.teamA.id?'score-win':(m1.simulated?'score-lose':'')}" style="background:#111;">${m1.simulated ? m1.scoreA : '-'}</div>
+            </div>
+            <div class="bracket-team-row">
+                <div class="b-team-info"><img src="${m1.teamB.logo}" class="b-team-logo" onerror="this.src='https://liquipedia.net/commons/images/a/a2/No_avatar.png'"> ${m1.teamB.name}</div>
+                <div class="b-score ${m1.simulated && m1.winner.id===m1.teamB.id?'score-win':(m1.simulated?'score-lose':'')}" style="background:#111;">${m1.simulated ? m1.scoreB : '-'}</div>
+            </div>
+        </div>
+    `;
+    
+    // Node 2
+    view.innerHTML += `
+        <div class="bracket-match-node">
+            <div class="bracket-team-row">
+                <div class="b-team-info"><img src="${m2.teamA.logo}" class="b-team-logo" onerror="this.src='https://liquipedia.net/commons/images/a/a2/No_avatar.png'"> ${m2.teamA.name}</div>
+                <div class="b-score ${m2.winner.id===m2.teamA.id?'score-win':'score-lose'}">${m2.scoreA}</div>
+            </div>
+            <div class="bracket-team-row">
+                <div class="b-team-info"><img src="${m2.teamB.logo}" class="b-team-logo" onerror="this.src='https://liquipedia.net/commons/images/a/a2/No_avatar.png'"> ${m2.teamB.name}</div>
+                <div class="b-score ${m2.winner.id===m2.teamB.id?'score-win':'score-lose'}">${m2.scoreB}</div>
+            </div>
+        </div>
+    `;
+    
+    view.innerHTML += `<div class="stage-title" style="margin-top:15px; border-color:var(--accent-cyan); color:var(--accent-cyan);">Гранд-Финал (BO3)</div>`;
+    
+    // Final Node
+    let teamAName = f.teamA ? f.teamA.name : "Ожидание победителя полуфинала #1";
+    let teamALogo = f.teamA ? f.teamA.logo : "https://liquipedia.net/commons/images/a/a2/No_avatar.png";
+    view.innerHTML += `
+        <div class="bracket-match-node" style="border-color:rgba(0,255,204,0.2);">
+            <div class="bracket-team-row">
+                <div class="b-team-info"><img src="${teamALogo}" class="b-team-logo" onerror="this.src='https://liquipedia.net/commons/images/a/a2/No_avatar.png'"> ${teamAName}</div>
+                <div class="b-score" style="background:#111;">${f.simulated ? f.scoreA : '-'}</div>
+            </div>
+            <div class="bracket-team-row">
+                <div class="b-team-info"><img src="${f.teamB.logo}" class="b-team-logo" onerror="this.src='https://liquipedia.net/commons/images/a/a2/No_avatar.png'"> ${f.teamB.name}</div>
+                <div class="b-score" style="background:#111;">${f.simulated ? f.scoreB : '-'}</div>
+            </div>
+        </div>
+    `;
+    let btn = document.getElementById("btn-enter-server");
+    if(bracketMatches.semi1.simulated && bracketMatches.semi1.winner.id !== myTeam.id) {
+        btn.innerText = "Вы вылетели с турнира. Вернуться на базу.";
+        btn.onclick = function() { goScreen("screen-main"); };
+    } else if(bracketMatches.semi1.simulated && !bracketMatches.final.simulated) {
+        btn.innerText = "Выйти на сервер Гранд-Финала";
+        currentOpponentTeam = bracketMatches.final.teamB;
+    } else if(bracketMatches.final.simulated) {
+        btn.innerText = "Турнир завершен. Вернуться в панель управления";
+        btn.onclick = function() { goScreen("screen-main"); };
+    }
+}
+
+function scheduleNextTournament(reason) {
+    if(seasonRestartTimer) clearTimeout(seasonRestartTimer);
+    if(seasonRestartInterval) clearInterval(seasonRestartInterval);
+    addTweet("CS2 Calendar", "🔥 Начинается новый турнир!");
+    if(myTeam && myTeam.roster.length >= TEAM_ROSTER_LIMIT) {
+        generateTournamentBracket();
+        renderBracketView();
+        goScreen("screen-bracket");
+    } else {
+        alert('Ростер не полный, новый турнир не может начаться. Достройте состав до 5 игроков.');
+    }
+}
+
+function autoSimulateRemainingBracket() {
+    if(bracketAutoRestarted) return;
+    bracketAutoRestarted = true;
+
+    if(bracketMatches.semi1.simulated && bracketMatches.semi1.winner.id !== myTeam.id) {
+        if(!bracketMatches.final.teamA) {
+            bracketMatches.final.teamA = bracketMatches.semi1.winner;
+        }
+        if(!bracketMatches.final.simulated) {
+            let teamA = bracketMatches.final.teamA;
+            let teamB = bracketMatches.final.teamB;
+            let result = simulateBo3Result();
+            bracketMatches.final.simulated = true;
+            bracketMatches.final.scoreA = result.scoreA;
+            bracketMatches.final.scoreB = result.scoreB;
+            bracketMatches.final.winner = result.winner === 'A' ? teamA : teamB;
+            addTweet("HLTV Results", `🔁 Финал досимулирован: ${teamA.name} ${result.scoreA}:${result.scoreB} ${teamB.name}.`);
+        }
+    }
+
+    addTweet("CS2 Calendar", "🏁 Турнир завершен. Начинается новый турнир!");
+    if(myTeam && myTeam.roster.length >= TEAM_ROSTER_LIMIT) {
+        generateTournamentBracket();
+    }
+}
+
+function simulateBo3Result() {
+    let winner = Math.random() < 0.5 ? 'A' : 'B';
+    let loserScore = Math.floor(Math.random() * 2);
+    return winner === 'A'
+        ? { scoreA: 2, scoreB: loserScore, winner: 'A' }
+        : { scoreA: loserScore, scoreB: 2, winner: 'B' };
+}
+
+// СЛУЧАЙНЫЕ ЧП ПЕРЕД МАТЧЕМ (ИНЦИДЕНТЫ)
+function checkIncidentsBeforeMatch() {
+    let roll = Math.random();
+    if(roll < 0.4) {
+        // Происходит случайное событие
+        triggerRandomIncident();
+    } else {
+        startVetoStage();
+    }
+}
+
+function triggerRandomIncident() {
+    let modal = document.getElementById("event-modal");
+    let title = document.getElementById("event-title");
+    let desc = document.getElementById("event-desc");
+    let opts = document.getElementById("event-options-container");
+    opts.innerHTML = "";
+    
+    let p = myTeam.roster[Math.floor(Math.random()*myTeam.roster.length)];
+    
+    const events = [
+        {
+            title: `🎮 Сбой девайсов у ${p.name}`,
+            desc: `У игрока ${p.name} прямо перед выходом сломался сенсор мышки Razer Viper Mini, а запасной нет! Что будете делать?`,
+            options: [
+                { text: "«Купить топовую мышь у админов турнира за $5k»", effect: () => { clubBalance = Math.max(0, clubBalance - 5000); p.moral = 100; p.skill += 1; updateHUD(); startVetoStage(); } },
+                { text: "«Пусть играет на старой офисной мышке»", effect: () => { p.skill = Math.max(50, p.skill - 6); p.moral = Math.max(10, p.moral - 25); startVetoStage(); } }
+            ]
+        },
+        {
+            title: `🔊 Токсичный Твиттер / Психология`,
+            desc: `Аналитик Яна Медведева написала разгромную статью про игровую форму ${p.name}. Игрок замкнулся в себе и тильтует.`,
+            options: [
+                { text: "«Поддержать парня всей командой (Сыгранность -5%, Мораль +15%)»", effect: () => { teamChemistry = Math.max(0, teamChemistry - 5); p.moral = Math.min(100, p.moral + 15); updateHUD(); startVetoStage(); } },
+                { text: "«Жестко прикрикнуть: Твое дело нажимать кнопки, а не ныть!»", effect: () => { p.skill = Math.min(100, p.skill + 2); p.moral = Math.max(10, p.moral - 30); startVetoStage(); } }
+            ]
+        }
+    ];
+    
+    let ev = events[Math.floor(Math.random() * events.length)];
+    title.innerText = ev.title;
+    desc.innerText = ev.desc;
+    ev.options.forEach(o => {
+        let btn = document.createElement("button");
+        btn.className = "modal-option-btn";
+        btn.innerText = o.text;
+        btn.onclick = function() {
+            modal.style.display = "none";
+            o.effect();
+        };
+        opts.appendChild(btn);
+    });
+    
+    modal.style.display = "flex";
+}
+
+// СТАДИЯ ВЕТО КАРТ
+function startVetoStage() {
+    vetoStage = 0;
+    vetoActiveMaps = [...mapsPool];
+    matchMaps = [];
+    renderVetoMaps();
+    goScreen("screen-veto");
+}
+
+function renderVetoMaps() {
+    let container = document.getElementById("veto-maps-container");
+    container.innerHTML = "";
+    
+    vetoActiveMaps.forEach(m => {
+        container.innerHTML += `
+            <div class="map-item" style="background-image: linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)), url('${MAP_IMAGES[m] || 'mirage.png'}')">
+                <span style="font-weight:900; font-size:18px; letter-spacing:1px; color:#fff;">${m.toUpperCase()}</span>
+                <button onclick="banMap('${m}')" style="background:var(--red-alert); font-size:11px; padding:10px 18px;">Вычеркнуть</button>
+            </div>
+        `;
+    });
+}
+
+function banMap(mapName) {
+    // 1. Наш бан
+    vetoActiveMaps = vetoActiveMaps.filter(m => m !== mapName);
+    
+    // 2. ИИ вычеркивает карту в ответ
+    if(vetoActiveMaps.length > 3) {
+        let aiBanIdx = Math.floor(Math.random() * vetoActiveMaps.length);
+        let aiBanned = vetoActiveMaps[aiBanIdx];
+        vetoActiveMaps = vetoActiveMaps.filter(m => m !== aiBanned);
+        alert(`Вы забанили ${mapName}. Оппонент в ответ банит ${aiBanned}`);
+    }
+    
+    // Проверяем, сколько осталось карт
+    if(vetoActiveMaps.length <= 3) {
+        // Оставшиеся 3 карты идут в пул матча BO3
+        matchMaps = [...vetoActiveMaps];
+        alert(`Пул карт на серию BO3 определен: ${matchMaps.join(', ')}! Выходим на сервер!`);
+        startMatchSeries();
+    } else {
+        renderVetoMaps();
+    }
+}
+
+// ЗАПУСК И СИМУЛЯЦИЯ СЕРИИ МАТЧА
+function startMatchSeries() {
+    seriesScoreA = 0;
+    seriesScoreB = 0;
+    currentMapIdx = 0;
+    goScreen("screen-match");
+    runSingleMap();
+}
+
+function runSingleMap() {
+    scoreA = 0;
+    scoreB = 0;
+    matchPause = false;
+    currentTactic = "normal";
+    logLinesCounter = 0;
+    matchSpeed = 1;
+    updateMatchSpeedButton();
+    
+    document.getElementById("btn-finish-match").style.display = "none";
+    document.getElementById("btn-pause-match").innerText = "⏸️ Тактическая пауза";
+    document.getElementById("btn-pause-match").disabled = false;
+    
+    document.getElementById("hud-name-a").innerText = myTeam.name.toUpperCase();
+    document.getElementById("hud-logo-a").src = myTeam.logo;
+    document.getElementById("hud-name-b").innerText = currentOpponentTeam.name.toUpperCase();
+    document.getElementById("hud-logo-b").src = currentOpponentTeam.logo;
+    
+    document.getElementById("hud-series-a").innerText = seriesScoreA;
+    document.getElementById("hud-series-b").innerText = seriesScoreB;
+    
+    let currentMapName = matchMaps[currentMapIdx] || "Mirage";
+    document.getElementById("hud-map-title").innerText = currentMapName.toUpperCase();
+    document.getElementById("hud-map-bg").style.backgroundImage = `linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('${MAP_IMAGES[currentMapName]}')`;
+    
+    renderLiveStats();
+    
+    let consoleBox = document.getElementById("match-console");
+    consoleBox.innerHTML = `<div class="c-entry c-ot"> knife round: Команды разыгрывают стороны на карте ${currentMapName}... Менеджер, выберите тактику на пистолетку!</div>`;
+    
+    if(logsTimer) clearInterval(logsTimer);
+    logsTimer = setInterval(simulateMatchRound, 1200 / matchSpeed);
+}
+
+function toggleMatchSpeed() {
+    matchSpeed = matchSpeed === 1 ? 2 : 1;
+    let btn = document.getElementById("btn-speed-match");
+    if(btn) btn.innerText = matchSpeed === 1 ? "⏩ Ускорить x2" : "⚡ Нормальная скорость";
+    if(logsTimer) {
+        clearInterval(logsTimer);
+        logsTimer = setInterval(simulateMatchRound, 1200 / matchSpeed);
+    }
+}
+
+function updateMatchSpeedButton() {
+    let btn = document.getElementById("btn-speed-match");
+    if(btn) {
+        btn.innerText = matchSpeed === 1 ? "⏩ Ускорить x2" : "⚡ Нормальная скорость";
+    }
+}
+
+function renderLiveStats() {
+    let containerA = document.getElementById("m-players-a");
+    containerA.innerHTML = "";
+    myTeam.roster.forEach(p => {
+        let kd = (parseFloat(p.kd) || (1.0 + (p.skill-85)*0.01)).toFixed(2);
+        let adr = Math.round(70 + (p.skill-85)*2);
+        let health = Math.max(5, Math.min(100, Math.round(p.moral || 70)));
+        let eff = Math.max(10, Math.min(100, Math.round(p.skill || 60)));
+        containerA.innerHTML += `
+            <div class="match-player-row">
+                <div class="player-row-left">
+                    <img src="${getPlayerAvatar(p.name)}" class="player-avatar" onerror="this.src='https://liquipedia.net/commons/images/a/a2/No_avatar.png'">
+                    <div>
+                        <div class="m-p-nick">${p.name}</div>
+                        <div class="m-p-stats">K/D: ${kd} | ADR: ${adr}</div>
+                    </div>
+                </div>
+                <div class="stat-bars">
+                    <div class="stat-row"><div style="color:var(--accent-cyan); width:36px; font-weight:700;">HP</div><div class="stat-bar"><div class="stat-bar-inner" style="width:${health}%"></div></div><div style="width:36px; text-align:right; color:var(--text-muted);">${health}%</div></div>
+                    <div class="stat-row"><div style="color:var(--accent-orange); width:36px; font-weight:700;">Eff</div><div class="stat-bar"><div class="stat-bar-inner" style="width:${eff}%; background:linear-gradient(90deg,#00ffcc,#ff5500)"></div></div><div style="width:36px; text-align:right; color:var(--text-muted);">${eff}%</div></div>
+                </div>
+            </div>
+        `;
+    });
+    
+    let containerB = document.getElementById("m-players-b");
+    containerB.innerHTML = "";
+    currentOpponentTeam.roster.forEach(p => {
+        let kd = (parseFloat(p.kd) || (1.0 + (p.skill-85)*0.01)).toFixed(2);
+        let adr = Math.round(68 + (p.skill-85)*1.8);
+        let health = Math.max(5, Math.min(100, Math.round(p.moral || 65)));
+        let eff = Math.max(10, Math.min(100, Math.round(p.skill || 60)));
+        containerB.innerHTML += `
+            <div class="match-player-row reverse">
+                <div class="player-row-left" style="flex-direction:row-reverse;">
+                    <img src="${getPlayerAvatar(p.name)}" class="player-avatar" onerror="this.src='https://liquipedia.net/commons/images/a/a2/No_avatar.png'">
+                    <div style="text-align:right;">
+                        <div class="m-p-nick">${p.name}</div>
+                        <div class="m-p-stats">K/D: ${kd} | ADR: ${adr}</div>
+                    </div>
+                </div>
+                <div class="stat-bars" style="margin-left:0; margin-right:14px;">
+                    <div class="stat-row"><div style="color:var(--accent-cyan); width:36px; font-weight:700;">HP</div><div class="stat-bar"><div class="stat-bar-inner" style="width:${health}%"></div></div><div style="width:36px; text-align:right; color:var(--text-muted);">${health}%</div></div>
+                    <div class="stat-row"><div style="color:var(--accent-orange); width:36px; font-weight:700;">Eff</div><div class="stat-bar"><div class="stat-bar-inner" style="width:${eff}%; background:linear-gradient(90deg,#00ffcc,#ff5500)"></div></div><div style="width:36px; text-align:right; color:var(--text-muted);">${eff}%</div></div>
+                </div>
+            </div>
+        `;
+    });
+}
+
+function setMatchTactic(tac) {
+    currentTactic = tac;
+    let consoleBox = document.getElementById("match-console");
+    if(tac === 'eco') {
+        consoleBox.innerHTML += `<div class="c-entry c-ot">📋 Команда переходит на ЭКОНОМИЧЕСКИЙ раунд (сейв ресурсов).</div>`;
+    } else if(tac === 'rush') {
+        consoleBox.innerHTML += `<div class="c-entry c-ot">🏹 Выдан приказ на БЫСТРЫЙ РАШ А-плента! Скилл атаки повышен.</div>`;
+    }
+    consoleBox.scrollTop = consoleBox.scrollHeight;
+}
+
+function toggleMatchPause() {
+    matchPause = !matchPause;
+    let btn = document.getElementById("btn-pause-match");
+    let consoleBox = document.getElementById("match-console");
+    if(matchPause) {
+        btn.innerText = "▶️ Возобновить игру";
+        consoleBox.innerHTML += `<div class="c-entry c-ot">⏸️ Менеджер берет тактический тайм-аут. Разбор полетов... Мораль игроков частично восстановлена!</div>`;
+        myTeam.roster.forEach(p => p.moral = Math.min(100, p.moral + 5));
+    } else {
+        btn.innerText = "⏸️ Тактическая пауза";
+        consoleBox.innerHTML += `<div class="c-entry c-ot">▶️ Пауза снята. Команды возвращаются на сервер!</div>`;
+    }
+    consoleBox.scrollTop = consoleBox.scrollHeight;
+}
+
+// СИМУЛЯТОР ЛОГОВ РАУНДОВ С ЦИТАТАМИ КЛЮЧЕВЫХ СОБЫТИЙ МАТЧА
+function simulateMatchRound() {
+    if(matchPause) return;
+    
+    // Считаем общую силу команд
+    let powerA = myTeam.roster.reduce((acc, p) => acc + p.skill, 0) / 5 + (teamChemistry * 0.1);
+    let powerB = currentOpponentTeam.roster.reduce((acc, p) => acc + p.skill, 0) / 5 + 5; // ИИ бонус
+    
+    if(currentTactic === 'eco') powerA -= 12; // Эко ослабляет текущий раунд, но сохраняет деньги
+    if(currentTactic === 'rush') powerA += 5;
+    
+    let rollA = Math.random() * powerA;
+    let rollB = Math.random() * powerB;
+    
+    let winA = rollA > rollB;
+    if(winA) scoreA++; else scoreB++;
+    
+    document.getElementById("hud-score-a").innerText = scoreA;
+    document.getElementById("hud-score-b").innerText = scoreB;
+    
+    // Генерация красивого лога
+    let consoleBox = document.getElementById("match-console");
+    let pA = myTeam.roster[Math.floor(Math.random()*myTeam.roster.length)];
+    let pB = currentOpponentTeam.roster[Math.floor(Math.random()*currentOpponentTeam.roster.length)];
+    
+    logLinesCounter++;
+    
+    if(winA) {
+        const logsA = [
+            `🎯 ${pA.name} ставит нереальный tap в голову игроку ${pB.name} через дым! Раунд за нами!`,
+            `💣 Бомба успешно установлена на B-пленте. ${pA.name} удерживает позицию в клатче 1v2!`,
+            `⚡ Идеальный эко-прием от нашей команды! Перестреляли девайсы оппонента с Диглов!`,
+            `🔥 Эйс! Команда стирает оппонентов с карты без единой потери!`
+        ];
+        consoleBox.innerHTML += `<div class="c-entry c-us">${logsA[Math.floor(Math.random()*logsA.length)]}</div>`;
+    } else {
+        const logsB = [
+            `💀 ${pB.name} вскрывает нашу оборону через мидл, минусуя двоих. Раунд уходит врагам.`,
+            `❌ Наша команда не успевает выбить точку А. Бомба взрывается.`,
+            `🎯 Ужасный тайминг. ${pA.name} ловит флешку лицом, ${pB.name} забирает легкий фраг со скаута.`,
+            `⚠️ Снайпер врага контролирует длину. Наш раш полностью остановлен.`
+        ];
+        consoleBox.innerHTML += `<div class="c-entry c-en">${logsB[Math.floor(Math.random()*logsB.length)]}</div>`;
+    }
+    
+    consoleBox.scrollTop = consoleBox.scrollHeight;
+    
+    // Сброс тактики
+    if(currentTactic !== 'normal' && Math.random() > 0.6) currentTactic = 'normal';
+    
+    // Конец карты (игра до 13 раундов по системе MR12)
+    if((scoreA >= 13 || scoreB >= 13) && Math.abs(scoreA - scoreB) >= 1) {
+        clearInterval(logsTimer);
+        onMapFinished();
+    }
+}
+
+function onMapFinished() {
+    if(scoreA > scoreB) seriesScoreA++; else seriesScoreB++;
+    document.getElementById("hud-series-a").innerText = seriesScoreA;
+    document.getElementById("hud-series-b").innerText = seriesScoreB;
+    
+    let consoleBox = document.getElementById("match-console");
+    consoleBox.innerHTML += `<div class="c-entry c-ot">🏁 Карта завершена со счетом ${scoreA}:${scoreB}!</div>`;
+    
+    currentMapIdx++;
+    document.getElementById("btn-pause-match").disabled = true;
+    
+    // Проверка победы в серии BO3
+    if(seriesScoreA === 2 || seriesScoreB === 2 || currentMapIdx === 3) {
+        document.getElementById("btn-finish-match").style.display = "block";
+    } else {
+        setTimeout(runSingleMap, 2500); // Переход к следующей карте через паузу
+    }
+}
+
+// ПОСЛЕМАТЧЕВОЕ ИНТЕРВЬЮ (ПРЕСС-КОНФЕРЕНЦИЯ HLTV)
+function closeMatchAndOpenPress() {
+    goScreen("screen-press");
+    let q = document.getElementById("press-question");
+    let opt = document.getElementById("press-options"); 
+    opt.innerHTML = "";
+    
+    let isSemi = !bracketMatches.semi1.simulated;
+    
+    if(seriesScoreA > seriesScoreB) {
+        // Мы выиграли матч
+        if(isSemi) {
+            bracketMatches.semi1.simulated = true;
+            bracketMatches.semi1.scoreA = seriesScoreA;
+            bracketMatches.semi1.scoreB = seriesScoreB;
+            bracketMatches.semi1.winner = myTeam;
+            bracketMatches.final.teamA = myTeam; // Проходим в финал
+            
+            q.innerText = "Журналист HLTV: Поздравляем с чистой победой и выходом в финал Мейджора! Что помогло вам забрать серию?";
+            opt.innerHTML += `<button onclick="finishPress(true, 'tactics')">«Наши тактики и заготовки сработали идеально»</button>`;
+            opt.innerHTML += `<button onclick="finishPress(true, 'hype')">«Мы просто жестче стреляем, у врагов не было шансов»</button>`;
+        } else {
+            // Выиграли финал
+            bracketMatches.final.simulated = true;
+            bracketMatches.final.scoreA = seriesScoreA;
+            bracketMatches.final.scoreB = seriesScoreB;
+            bracketMatches.final.winner = myTeam;
+            
+            q.innerText = "Репортер: Невероятно! Вы чемпионы PGL Major 2026! Кубок ваш! Какие эмоции испытывает организация?";
+            opt.innerHTML += `<button onclick="finishPress(true, 'champion')">«Это заслуга всей команды и буткемпа. Мы вписали себя в историю!»</button>`;
+        }
+    } else {
+        // Поражение
+        if(isSemi) {
+            bracketMatches.semi1.simulated = true;
+            bracketMatches.semi1.scoreA = seriesScoreA;
+            bracketMatches.semi1.scoreB = seriesScoreB;
+            bracketMatches.semi1.winner = currentOpponentTeam;
+        } else {
+            bracketMatches.final.simulated = true;
+            bracketMatches.final.scoreA = seriesScoreA;
+            bracketMatches.final.scoreB = seriesScoreB;
+            bracketMatches.final.winner = currentOpponentTeam;
+        }
+        
+        q.innerText = "Журналист: Обидное поражение и вылет. Болельщики свистят, руководство в ярости. Будут ли кадровые изменения и кики?";
+        opt.innerHTML += `<button onclick="finishPress(false, 'disband')">«Мы разберем ошибки, сделаем замены на рынке и вернемся сильнее»</button>`;
+        opt.innerHTML += `<button onclick="finishPress(false, 'blame')">«Игроки не выполнили установку на матч. Виноваты девайсы.»</button>`;
+    }
+}
+
+function finishPress(win, answerType) {
+    if(win) {
+        let cashPrize = 80000;
+        if(answerType === 'champion') cashPrize = 250000; // Бонус за чемпионство Мейджора
+        
+        clubBalance += cashPrize;
+        myTeam.points += win ? 150 : 0;
+        myTeam.roster.forEach(p => p.moral = Math.min(100, p.moral + 15));
+        
+        addTweet("HLTV News", `🏆 Интервью завершено. Менеджер ${myTeam.name} похвалил игроков. Организация забирает призовые!`);
+    } else {
+        myTeam.roster.forEach(p => p.moral = Math.max(10, p.moral - 20)); // Сильный удар по морали
+        if(answerType === 'blame') teamChemistry = Math.max(0, teamChemistry - 20); // Ссора в составе
+        
+        addTweet("HLTV News", `❌ Грустное интервью на стриме. Атмосфера внутри ${myTeam.name} накалена до предела.`);
+    }
+    
+    if(!win) {
+        if(bracketMatches.semi1.simulated && bracketMatches.semi1.winner.id !== myTeam.id) {
+            autoSimulateRemainingBracket();
+        } else {
+            generateTournamentBracket();
+        }
+    } else if(win && answerType === 'champion') {
+        generateTournamentBracket();
+    }
+    updateHUD();
+    renderBracketView();
+    goScreen("screen-bracket");
+}
+// ФУНКЦИИ ПЛАШКИ УПРАВЛЕНИЯ
+function renderManagePanel() {
+    let list = document.getElementById("manage-roster-list");
+    let select = document.getElementById("chat-player-select");
+    list.innerHTML = "";
+    select.innerHTML = "";
+    
+    myTeam.roster.forEach((p, idx) => {
+        if(!p.salary) p.salary = 4000; // Дефолт если не подгрузилось
+        
+        list.innerHTML += `
+            <div class="player-card" style="background:var(--card-bg); margin-bottom:10px; padding:12px;">
+                <div>
+                    <strong style="font-size:16px; color:#fff;">${p.name}</strong>
+                    <div style="font-size:12px; color:var(--text-muted);">Зарплата: <span style="color:var(--green-money); font-weight:bold;">$${p.salary}</span>/мес</div>
+                </div>
+                <div style="display:flex; gap:8px;">
+                    <button onclick="changeSalary(${idx}, 500)" style="background:var(--green-money); color:#000; padding:6px 12px; font-size:11px;">+$500</button>
+                    <button onclick="changeSalary(${idx}, -500)" style="background:var(--red-alert); padding:6px 12px; font-size:11px;">-$500</button>
+                    <button onclick="sellPlayer(${idx})" style="background:#444; padding:6px 12px; font-size:11px;">Продать</button>
+                </div>
+            </div>
+        `;
+        
+        select.innerHTML += `<option value="${idx}">${p.name} (${p.role})</option>`;
+    });
+}
+
+function changeSalary(idx, amount) {
+    let p = myTeam.roster[idx];
+    p.salary = Math.max(1000, p.salary + amount);
+    
+    if(amount > 0) {
+        p.moral = Math.min(100, p.moral + 10);
+        p.skill = Math.min(100, p.skill + 1);
+        alert(`Вы повысили зарплату ${p.name}. Мораль выросла!`);
+    } else {
+        p.moral = Math.max(10, p.moral - 20);
+        p.skill = Math.max(50, p.skill - 2);
+        alert(`Вы урезали зарплату ${p.name}. Игрок недоволен и теряет мотивацию.`);
+    }
+    renderManagePanel();
+    updateHUD();
+}
+
+// СИМУЛЯЦИЯ ИИ ОТВЕТОВ ИГРОКОВ НА ОСНОВЕ ИХ МОРАЛИ И СКИЛЛА
+function sendChatMessage() {
+    let input = document.getElementById("chat-input");
+    let text = input.value.trim();
+    if(!text) return;
+    
+    let pIdx = document.getElementById("chat-player-select").value;
+    let player = myTeam.roster[pIdx];
+    
+    let chatBox = document.getElementById("chat-box");
+    
+    // Выводим сообщение менеджера
+    chatBox.innerHTML = `<div><span style="color:var(--accent-cyan);">Вы:</span> ${text}</div>` + chatBox.innerHTML;
+    input.value = "";
+    
+    // Анализ контекста сообщения менеджера для ИИ-ответа
+    let msgLower = text.toLowerCase();
+    let aiResponse = "";
+    
+    // Шаблоны генерации ответа в зависимости от характера и морали
+    if(msgLower.includes("плохо") || msgLower.includes("кик") || msgLower.includes("ужасно") || msgLower.includes("нуб")) {
+        if(player.moral > 75) {
+            aiResponse = `«Я знаю, что последние праки не пошли, менеджер. Но я выкладываюсь на 100%. Дайте мне шанс доказать на Мейджоре.»`;
+            player.moral = Math.max(10, player.moral - 5);
+        } else {
+            aiResponse = `«Сам ты нуб! С такой атмосферой в клубе и такой тактикой ни один снайпер не заиграет. Ищи мне новую команду.»`;
+            player.moral = Math.max(10, player.moral - 20);
+        }
+    } else if(msgLower.includes("красавчик") || msgLower.includes("лучший") || msgLower.includes("хорош") || msgLower.includes("молодец")) {
+        aiResponse = `«Спасибо за поддержку, босс! Приятно, когда руководство видит твой импакт. Завтра натренирую новые смоки.»`;
+        player.moral = Math.min(100, player.moral + 12);
+    } else if(msgLower.includes("тактика") || msgLower.includes("тренируйся") || msgLower.includes("прак")) {
+        aiResponse = `«Принял. Мы как раз с капитаном обсуждали, что нужно перестроить наш дефолт за атаку на Inferno. Будем работать.»`;
+        player.skill = Math.min(100, player.skill + 1);
+    } else {
+        // Рандомный ИИ дефолт ответ на основе личности
+        const generalAnswers = [
+            `«Главное, чтобы зарплату вовремя платили, а фраги на сервере я оформлю. Какие планы на некст соперника?»`,
+            `«Настроение нормальное, девайсы настроил. Готов разваливать. Главное — забанить Mirage на вето.»`,
+            `«Всё под контролем, шеф. Стрельба летит, тильта нет. Главное не забудьте буткемп вовремя собрать!»`
+        ];
+        aiResponse = generalAnswers[Math.floor(Math.random() * generalAnswers.length)];
+    }
+    
+    // Эмуляция задержки ИИ ответа
+    setTimeout(() => {
+        chatBox.innerHTML = `<div style="margin-bottom:10px;"><span style="color:var(--accent-orange); font-weight:bold;">${player.name}:</span> ${aiResponse}</div>` + chatBox.innerHTML;
+        renderManagePanel(); // Обновить показатели если изменились
+    }, 600);
+}
+// ==========================================
+// ==========================================
+// РАСШИРЕННЫЕ ИИ-КОММЕНТАРИИ ПОСЛЕ МАТЧА
+// ==========================================
+
+function generateExtendedAICommentary() {
+    return "";
+}
+</script>
+</body>
+</html>
