@@ -110,7 +110,7 @@
         }
         .player-card:hover { border-color: #2e3547; }
         .p-info { display: flex; align-items: center; gap: 20px; }
-        .p-avatar-img { width: 55px; height: 55px; border-radius: 10px; object-fit: cover; background: #171c28; border: 1px solid #252c3e; }
+        .p-avatar-img { width: 85px; height: 85px; border-radius: 10px; object-fit: cover; background: #171c28; border: 1px solid #252c3e; }
         .p-name { font-weight: 900; font-size: 17px; }
         .p-meta { font-size: 13px; color: var(--text-muted); margin-top: 4px; font-family: 'JetBrains Mono', monospace; }
         .p-badge { background: #060709; padding: 6px 12px; border-radius: 8px; font-weight: bold; color: var(--accent-cyan); font-size: 13px; border: 1px solid rgba(0,255,204,0.1); }
@@ -138,6 +138,19 @@
         .tab-btn { background: transparent; color: var(--text-muted); flex: 1; padding: 12px; border-radius: 8px; text-transform: none; font-size: 13px; }
         .tab-btn.active { background: var(--card-bg); color: #fff; font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.4); }
         .tab-btn:hover:not(.active) { color: #fff; background: rgba(255,255,255,0.02); box-shadow: none; }
+
+        .tournament-calendar { display: grid; gap: 12px; }
+        .tournament-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 18px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; }
+        .tournament-row span { font-size: 13px; color: var(--text-muted); }
+        .tournament-name { display: flex; align-items: center; gap: 12px; font-weight: 700; color: #fff; }
+        .tournament-logo-img { width: 52px; height: 52px; object-fit: contain; border-radius: 12px; background: rgba(255,255,255,0.04); padding: 8px; border: 1px solid rgba(255,255,255,0.08); }
+        .tournament-status { font-weight: 700; color: var(--accent-cyan); }
+        .summary-modal-player { display:flex; align-items:center; gap:14px; padding:12px 0; border-bottom:1px solid rgba(255,255,255,0.08); }
+        .summary-modal-player:last-child { border-bottom:none; }
+        .summary-modal-avatar { width:48px; height:48px; border-radius:12px; object-fit:cover; border:1px solid rgba(255,255,255,0.08); }
+        .summary-modal-player-info { display:flex; flex-direction:column; gap:4px; }
+        .summary-modal-player-name { font-weight:800; color:#fff; }
+        .summary-modal-player-meta { font-size:12px; color:var(--text-muted); }
 
         .social-feed-widget { background: #060709; border: 1px solid var(--border-color); border-radius: 14px; padding: 20px; height: 220px; overflow-y: auto; }
         .tweet-entry { border-bottom: 1px solid #161a24; padding: 12px 0; font-size: 14px; cursor: pointer; transition: background 0.2s; }
@@ -270,6 +283,32 @@ document.addEventListener('click', function(e) {
     </div>
 </div>
 
+<div id="season-summary-modal" class="modal-overlay">
+    <div class="modal-box">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <div style="font-size:16px; font-weight:900;">Итоги сезона турниров</div>
+            <div style="font-size:12px; color:var(--text-muted);">4 турнира завершено</div>
+        </div>
+        <div id="season-summary-content" style="display:flex; flex-direction:column; gap:16px;"></div>
+        <div style="display:flex; gap:10px; margin-top:12px;">
+            <button onclick="openSeasonOffers()" style="flex:1; padding:14px; background:#1f2937; border:1px solid var(--border-color);">Сообщения</button>
+            <button onclick="startNewSeasonFromSummary()" style="flex:1; padding:14px; background:#1f4d7a; border:1px solid var(--border-color);">Начать новый сезон</button>
+        </div>
+        <button onclick="closeSeasonSummary()" style="width:100%; margin-top:10px; background:#222634;">Закрыть итоговое окно</button>
+    </div>
+</div>
+
+<div id="season-offer-modal" class="modal-overlay">
+    <div class="modal-box">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <div style="font-size:16px; font-weight:900;">📩 Предложения</div>
+            <div style="font-size:12px; color:var(--text-muted);">Сделки и контрактные письма</div>
+        </div>
+        <div id="season-offer-content" style="display:flex; flex-direction:column; gap:14px;"></div>
+        <button onclick="closeSeasonOffers()" style="width:100%; margin-top:10px; background:#222634;">Закрыть сообщения</button>
+    </div>
+</div>
+
 <div id="kick-modal" class="modal-overlay">
     <div class="modal-box">
         <h3>🚫 Увольнение игрока</h3>
@@ -301,6 +340,10 @@ document.addEventListener('click', function(e) {
         <div style="text-align: right;">
             <div style="font-size: 11px; color: var(--text-muted); text-transform:uppercase;">Бюджет клуба</div>
             <div id="balance-txt" style="font-size: 28px; font-weight: 900; color: var(--green-money);">0$</div>
+            <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:10px;">
+                <div class="tournament-logo-badge pgl">PGL x3</div>
+                <div class="tournament-logo-badge major">Major x1</div>
+            </div>
         </div>
     </header>
 
@@ -317,7 +360,7 @@ document.addEventListener('click', function(e) {
             <div class="panel">
                 <h2>👥 Активный состав команды</h2>
                 <div id="roster-list"></div>
-                <h2 style="margin-top: 25px;">🏢 Инфраструктура</h2>
+                <h2 style="margin-top: 25px;">🏢 Улучшения</h2>
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
                     <button onclick="buyUpgrade('monitors')" id="up-monitors" style="background:#1b1e2a; border:1px solid var(--border-color); padding:12px;">🖥️ Мониторы 540Hz ($25k)<br><span style="color:var(--text-muted); font-size:10px;">+2 к скиллу ростера</span></button>
                     <button onclick="buyUpgrade('psychologist')" id="up-psychologist" style="background:#1b1e2a; border:1px solid var(--border-color); padding:12px;">🧠 Топ-Психолог ($30k)<br><span style="color:var(--text-muted); font-size:10px;">Стабилизирует мораль</span></button>
@@ -325,15 +368,20 @@ document.addEventListener('click', function(e) {
                     <button onclick="buyBootcamp()" style="background:#1b1e2a; border:1px solid var(--border-color); padding:12px;">💻 Собрать Буткемп ($15k)<br><span style="color:var(--text-muted); font-size:10px;">Сыгранность +10%</span></button>
                 </div>
             </div>
-            <div class="panel" style="display:flex; flex-direction:column; justify-content:space-between;">
-                <div>
-                    <h2>📱 Социальные сети & Инсайды</h2>
-                    <div class="social-feed-widget" id="twitter-feed"></div>
+            <div class="panel" style="display:flex; flex-direction:column; gap:18px;">
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <img src="img/cs3news.png" alt="CS3NEWS" style="width:44px; height:44px; object-fit:contain;">
+                    <h2 style="margin:0;">CS3NEWS</h2>
                 </div>
-                <div style="background:linear-gradient(135deg, #151821, #0c0e14); padding:25px; border-radius:16px; border:1px solid var(--border-color); margin-top:20px;">
+                <div class="social-feed-widget" id="twitter-feed"></div>
+                <div style="background:linear-gradient(135deg, #151821, #0c0e14); padding:22px; border-radius:16px; border:1px solid var(--border-color);">
                     <div style="font-size:11px; text-transform:uppercase; color:var(--accent-orange); font-weight:bold;">Ближайший турнир</div>
-                    <div style="font-size: 20px; font-weight: 800; margin: 5px 0 15px 0; font-family: 'Orbitron';">PGL Major 2026</div>
-                    <button onclick="generateTournamentBracket()" style="width:100%; padding:14px;">Симулировать турнирную сетку</button>
+                    <div id="next-tournament-title" style="font-size: 18px; font-weight: 800; margin: 5px 0 12px 0; font-family: 'Orbitron';">PGL #1</div>
+                    <button id="btn-start-tournament" onclick="startNextTournament()" style="width:100%; padding:13px; font-size:13px;">Начать турнир</button>
+                </div>
+                <div style="background:linear-gradient(135deg, #151821, #0c0e14); padding:20px; border-radius:16px; border:1px solid var(--border-color);">
+                    <h3 style="margin-top:0; font-size:16px;">📅 Турнирный календарь сезона</h3>
+                    <div class="tournament-calendar" id="tournament-calendar"></div>
                 </div>
             </div>
         </div>
@@ -484,13 +532,14 @@ document.addEventListener('click', function(e) {
 </div>
 
 <script>
+const IMG_DIR = "img/";
 const LOGOS = {
-    Vitality: "Team_Vitality.png", NAVI: "Navi-Logo.png", Spirit: "Team_Spirit.png",
-    Paravision: "PARIVISION.png", FUT: "FUT.png", Falcons: "Falcons.png",
-    Furia: "Furia.png", Aurora: "Aur.png", Mongolz: "Mongolz.png",
-    Astralis: "Astralis.png", MOUZ: "mouz.png", G2: "G2.png",
-    GL: "GamerLegion.png", Legacy: "Legacy.png",
-    FaZe: "FaZe.png", VP: "Virtus.pro.png", Liquid: "Liquid.png", Complexity: "Complexity.png" // эти оставим в кэше
+    Vitality: IMG_DIR + "Team_Vitality.png", NAVI: IMG_DIR + "Navi-Logo.png", Spirit: IMG_DIR + "Team_Spirit.png",
+    Paravision: IMG_DIR + "PARIVISION.png", FUT: IMG_DIR + "FUT.png", Falcons: IMG_DIR + "Falcons.png",
+    Furia: IMG_DIR + "Furia.png", Aurora: IMG_DIR + "Aur.png", Mongolz: IMG_DIR + "Mongolz.png",
+    Astralis: IMG_DIR + "Astralis.png", MOUZ: IMG_DIR + "mouz.png", G2: IMG_DIR + "G2.png",
+    GL: IMG_DIR + "GamerLegion.png", Legacy: IMG_DIR + "Legacy.png", BCGAME: IMG_DIR + "bcgame.png",
+    FaZe: IMG_DIR + "FaZe.png", VP: IMG_DIR + "Virtus.pro.png", Liquid: IMG_DIR + "Liquid.png", Complexity: IMG_DIR + "Complexity.png" // эти оставим в кэше
 };
 
 const AVATARS = {
@@ -498,11 +547,11 @@ const AVATARS = {
     "ropz": "ropz.png", "broky": "BROKY1.png", "frozen": "frozen.png", "rain": "rain.png", "karrigan": "karrigan.png",
     "donk": "donk.png", "sh1ro": "sh1ro.png", "chopper": "Chopper.png", "magixx": "Magixx.png", "zont1x": "zont1x.png",
     "m0nesy": "m0NESY.png", "niko": "niko.png", "hunter": "hunter.png", "snax": "Snax.png", "malbsmd": "malsbsmd.png",
-    "s1mple": "S1mple.png", "dupreeh": "dupreeh.png", "magisk": "magisk.png", "maden": "maden.png", "snappi": "snappi.png",
+    "s1mple": "simple.png", "dupreeh": "dupreeh.png", "magisk": "magisk.png", "maden": "maden.png", "snappi": "snappi.png",
     "fallen": "fallen.png", "kscerato": "kscerato.png", "yuurih": "yuurih.png", "chelo": "chelo.png", "skullz": "skullz.png",
     "lack1": "lack1.png", "kensi": "kensi.png", "norwi": "norwi.png", "deko": "deko.png", "r3salt": "r3salt.png",
-    "jerry": "jerry.png", "artfr0st": "artfrost.png", "qikert": "qikert.png", "patsi": "patsi.png", "fl4mus": "fl4mus.png",
-    "jame": "kame.png", "fl1t": "fl1t.png", "fame": "fame.png", "n0rb3r7": "n0rb3r7.png", "electronic": "elic.png",
+    "jerry": "jerry.png", "artfr0st": "artfrost.png", "art": "art.png", "qikert": "qikert.png", "patsi": "patsi.png", "fl4mus": "fl4mus.png",
+    "jame": "kame.png", "fl1t": "fl1t.png", "fame": "fame.png", "n0rb3r7": "n0rb3r7.png", "electronic": "elictronic.png",
     "torzsi": "torzsi.png", "xertion": "xertion.png", "xelex": "xelex.png", "siuhy": "siuhy.png", "jimpphat": "jimpphat.png", "brollan": "brollan.png",
     "twistzz": "twistzz.png", "naf": "naf.png", "yekindar": "yekindar.png", "ultimate": "ultimate.png", "jks": "jks.png",
     "elige": "elige.png", "jt": "jt.png", "grim": "grim.png", "floppy": "floppy.png", "hallzerk": "hallzerk.png",
@@ -514,26 +563,269 @@ const AVATARS = {
     "hooxi": "hooxi.png", "phzy": "phzy.png", "jabbi": "jabbi.png", "staehr": "staehr.png", "ryu": "ryu.png",
     "dem0n": "dem0n.png", "launx": "launx.png", "krabeni": "krabeni.png", "cmtry": "cmtry.png", "dziugss": "dziugss.png",
     "XANTARES": "xantares.png", "woxic": "woxic.png", "MAJ3R": "maj3r.png", "Wicadia": "wicadia.png", "HeavyGod": "heavygod.png", 
+    "hunter-": "hunter.png", "nertz": "nertz.png", "sunpayus": "sunpayus.png", "matys": "matys.png", 
+    "PR": "pr.png", "Tauson": "tauson.png", "hypex": "hypex.png", 
     "hades": "hades.png", "imoRR": "imorr.png", "xfl0ud": "xfl0ud.png", "jottAAA": "jottaaa.png", "ztr": "ztr.png", 
-    "REZ": "rez.png", "saadzin": "saadzin.png", "lux": "lux.png", "n1ssim": "n1ssim.png", "TeSeS": "teses.png", "kyxsan": "kyxsan.png",  
+    "REZ": "rez.png", "saadzin": "saadzin.png", "lux": "lux.png", "dumau": "dumau.png", "latto": "latto.png", "n1ssim": "nissim.png", "TeSeS": "teses.png", "kyxsan": "kyxsan.png", "Krazy": "krazy.png", "Scrunk": "scrunk.png",  
 
     // Дубликаты в нижнем регистре на случай несовпадения шрифтов в массивах команд
     "tn1r": "tN1r.png", "belchonokk": "belchonokk.png", "xielo": "xielo.png", "heavygod": "heavygod.png", 
     "xantares": "xantares.png", "maj3r": "maj3r.png", "wicadia": "wicadia.png", "imorr": "imorr.png", 
-    "jottaaa": "jottaaa.png", "rez": "rez.png", "malbsmd": "malsbsmd.png",
-    "teses": "teses.png", "kyxsan": "kyxsan.png", "nota": "nota.png", "zweih": "zweih.png", "soulfly": "soulfly.png", "woxic": "woxic.png",
+    "jottaaa": "jottaaa.png", "rez": "rez.png", "pr": "pr.png", "tauson": "tauson.png", "hypex": "hypex.png", "malbsmd": "malsbsmd.png",
+    "teses": "teses.png", "kyxsan": "kyxsan.png", "dumau": "dumau.png", "latto": "latto.png", "n1ssim": "nissim.png", "krazy": "krazy.png", "scrunk": "scrunk.png", "nota": "nota.png", "zweih": "zweih.png", "soulfly": "soulfly.png", "woxic": "woxic.png",
     "default": "https://liquipedia.net/commons/images/a/a2/No_avatar.png"
-};
-
-const MAP_IMAGES = {
-    "Mirage": "mirage.png", "Inferno": "inferno.png", "Nuke": "nuke.png", 
-    "Ancient": "ancient.png", "Anubis": "anubis.png", "Dust 2": "dust2.png", "Vertigo": "vertigo.png"
 };
 
 function getPlayerAvatar(name) {
     if(!name) return AVATARS['default'];
     let cleanName = name.toString().trim().toLowerCase();
-    return AVATARS[cleanName] || AVATARS['default'];
+    return AVATARS[cleanName] ? IMG_DIR + AVATARS[cleanName] : AVATARS['default'];
+}
+
+const MAP_IMAGES = {
+    "Mirage": IMG_DIR + "mirage.png", "Inferno": IMG_DIR + "inferno.png", "Nuke": IMG_DIR + "nuke.png", 
+    "Ancient": IMG_DIR + "ancient.png", "Anubis": IMG_DIR + "anubis.png", "Dust 2": IMG_DIR + "dust2.png", "Vertigo": IMG_DIR + "vertigo.png"
+};
+
+const INITIAL_TOURNAMENT_SCHEDULE = [
+    {name: 'PGL Season 1', type: 'PGL', status: 'Ожидается', result: '-', stage: '-' },
+    {name: 'PGL Season 2', type: 'PGL', status: 'Ожидается', result: '-', stage: '-' },
+    {name: 'PGL Season 3', type: 'PGL', status: 'Ожидается', result: '-', stage: '-' },
+    {name: 'MAJOR 2026', type: 'Major', status: 'Ожидается', result: '-', stage: '-' }
+];
+
+let seasonState = {
+    tournaments: [],
+    currentIndex: 0,
+    pglWins: 0,
+    majorWins: 0,
+    startSkill: 0,
+    startValue: 0,
+    startKD: 0
+};
+
+function initSeasonState() {
+    seasonState.tournaments = INITIAL_TOURNAMENT_SCHEDULE.map(item => ({...item}));
+    seasonState.currentIndex = 0;
+    seasonState.pglWins = 0;
+    seasonState.majorWins = 0;
+    seasonState.startSkill = Math.round(myTeam.roster.reduce((sum, p) => sum + p.skill, 0) / myTeam.roster.length);
+    seasonState.startValue = myTeam.roster.reduce((sum, p) => sum + (p.price || getTransferOfferPrice(p)), 0);
+    seasonState.startKD = calculateTeamAverageKD(myTeam);
+    myTeam.roster.forEach(p => {
+        p.startSkill = p.skill;
+        p.startPrice = p.price || getTransferOfferPrice(p);
+        p.startKD = parseFloat(p.kd) || 1.00;
+    });
+    renderTournamentCalendar();
+    updateNextTournamentPanel();
+}
+
+function getTournamentLogoBadge(type) {
+    let logoSrc = type === 'PGL' ? IMG_DIR + 'pgl.png' : IMG_DIR + 'major.png';
+    return `<img class="tournament-logo-img" src="${logoSrc}" alt="${type} логотип" onerror="this.src='https://liquipedia.net/commons/images/a/a2/No_avatar.png'">`;
+}
+
+function calculateTeamAverageKD(team) {
+    if(!team || !team.roster || !team.roster.length) return 1.00;
+    let sum = 0;
+    let count = 0;
+    team.roster.forEach(p => {
+        let kd = parseFloat(p.kd);
+        if(isNaN(kd)) kd = 1.00;
+        sum += kd;
+        count += 1;
+    });
+    return count ? parseFloat((sum / count).toFixed(2)) : 1.00;
+}
+
+function renderTournamentCalendar() {
+    let container = document.getElementById('tournament-calendar');
+    if(!container) return;
+    container.innerHTML = '';
+    seasonState.tournaments.forEach((t, idx) => {
+        container.innerHTML += `
+            <div class="tournament-row">
+                <div class="tournament-name">${getTournamentLogoBadge(t.type)}<span>${t.name}</span></div>
+                <div style="text-align:right;">
+                    <div class="tournament-status">${t.status}</div>
+                    <div style="font-size:12px; color:var(--text-muted);">${t.result}${t.stage ? ' / ' + t.stage : ''}</div>
+                </div>
+            </div>
+        `;
+    });
+}
+
+function updateNextTournamentPanel() {
+    let title = document.getElementById('next-tournament-title');
+    let button = document.getElementById('btn-start-tournament');
+    if(!title || !button) return;
+    if(seasonState.currentIndex >= seasonState.tournaments.length) {
+        title.innerText = 'Сезон завершен';
+        button.innerText = 'Показать итоги сезона';
+    } else {
+        let next = seasonState.tournaments[seasonState.currentIndex];
+        title.innerText = next.name;
+        button.innerText = `Начать ${next.type}`;
+    }
+}
+
+function startNextTournament() {
+    if(!myTeam) {
+        alert('Сначала выберите команду для управления.');
+        return;
+    }
+    if(seasonState.currentIndex >= seasonState.tournaments.length) {
+        showSeasonSummary();
+        return;
+    }
+    generateTournamentBracket();
+}
+
+function showSeasonSummary() {
+    let modal = document.getElementById('season-summary-modal');
+    let content = document.getElementById('season-summary-content');
+    if(!modal || !content) return;
+
+    let currentSkill = Math.round(myTeam.roster.reduce((sum, p) => sum + p.skill, 0) / myTeam.roster.length);
+    let currentValue = myTeam.roster.reduce((sum, p) => sum + (p.price || getTransferOfferPrice(p)), 0);
+    let currentKD = calculateTeamAverageKD(myTeam);
+    let skillDelta = currentSkill - seasonState.startSkill;
+    let valueDelta = currentValue - seasonState.startValue;
+    let kdDelta = parseFloat((currentKD - seasonState.startKD).toFixed(2));
+
+    let tournamentSummary = seasonState.tournaments.map(t => `<div style="display:flex; justify-content:space-between; gap:10px;"><span>${t.name}</span><span style="color:#fff; font-weight:700;">${t.result}${t.stage ? ' / ' + t.stage : ''}</span></div>`).join('');
+
+    content.innerHTML = `
+        <div style="display:grid; gap:10px;">
+            <div style="display:flex; justify-content:space-between; gap:10px;"><span>Выигранные PGL</span><strong>${seasonState.pglWins} из 3</strong></div>
+            <div style="display:flex; justify-content:space-between; gap:10px;"><span>Выигранные Major</span><strong>${seasonState.majorWins} из 1</strong></div>
+            <div style="display:flex; justify-content:space-between; gap:10px;"><span>Средний скилл</span><strong>${currentSkill} (${skillDelta >= 0 ? '+' : ''}${skillDelta})</strong></div>
+            <div style="display:flex; justify-content:space-between; gap:10px;"><span>Стоимость текущих игроков</span><strong>$${currentValue.toLocaleString()} (${valueDelta >= 0 ? '+' : ''}$${valueDelta.toLocaleString()})</strong></div>
+            <div style="display:flex; justify-content:space-between; gap:10px;"><span>Средний K/D команды</span><strong>${currentKD} (${kdDelta >= 0 ? '+' : ''}${kdDelta})</strong></div>
+        </div>
+        <div style="border-top:1px solid rgba(255,255,255,0.08); padding-top:14px;">
+            <div style="font-weight:900; color:#fff; margin-bottom:8px;">Результаты турниров</div>
+            ${tournamentSummary}
+        </div>
+        <div style="border-top:1px solid rgba(255,255,255,0.08); padding-top:14px;">
+            <div style="font-weight:900; color:#fff; margin-bottom:10px;">Игроки и прирост</div>
+            ${myTeam.roster.map(p => {
+                let skillDiff = Math.round(p.skill - (p.startSkill || p.skill));
+                let priceDiff = Math.round((p.price || getTransferOfferPrice(p)) - (p.startPrice || (p.price || getTransferOfferPrice(p))));
+                let kdDiff = parseFloat(((parseFloat(p.kd) || 1.00) - (p.startKD || (parseFloat(p.kd) || 1.00))).toFixed(2));
+                return `
+                    <div class="summary-modal-player">
+                        <img src="${getPlayerAvatar(p.name)}" class="summary-modal-avatar" onerror="this.src='https://liquipedia.net/commons/images/a/a2/No_avatar.png'">
+                        <div class="summary-modal-player-info">
+                            <div class="summary-modal-player-name">${p.name}</div>
+                            <div class="summary-modal-player-meta">Скилл: ${p.startSkill} → ${p.skill} (${skillDiff >= 0 ? '+' : ''}${skillDiff})</div>
+                            <div class="summary-modal-player-meta">Стоимость: $${(p.startPrice || getTransferOfferPrice(p)).toLocaleString()} → $${(p.price || getTransferOfferPrice(p)).toLocaleString()} (${priceDiff >= 0 ? '+' : ''}$${priceDiff.toLocaleString()})</div>
+                            <div class="summary-modal-player-meta">K/D: ${p.startKD.toFixed(2)} → ${parseFloat(p.kd).toFixed(2)} (${kdDiff >= 0 ? '+' : ''}${kdDiff.toFixed(2)})</div>
+                        </div>
+                    </div>
+                `;
+            }).join('')}
+        </div>
+    `;
+    modal.style.display = 'flex';
+}
+
+function closeSeasonSummary() {
+    document.getElementById('season-summary-modal').style.display = 'none';
+}
+
+function startNewSeasonFromSummary() {
+    closeSeasonSummary();
+    initSeasonState();
+    updateHUD();
+    renderRoster();
+    switchMainTab('hub');
+    goScreen('screen-main');
+    if(typeof addTweet === 'function') {
+        addTweet("CS2 News", `🚀 ${myTeam.name} начинает новый сезон!`);
+    }
+}
+
+function openSeasonOffers() {
+    let modal = document.getElementById('season-offer-modal');
+    let content = document.getElementById('season-offer-content');
+    if(!modal || !content || !myTeam) return;
+
+    let player = myTeam.roster[0] || { name: 'Игрок', price: 20000 };
+    let buyer = teamsData.find(t => t.id !== myTeam.id) || teamsData[0];
+    let sellPrice = Math.round((player.price || getTransferOfferPrice(player)) * 1.1);
+
+    seasonOfferContext = {
+        playerName: player.name,
+        buyerName: buyer.name,
+        sellPrice
+    };
+
+    content.innerHTML = `
+        <div style="display:grid; gap:14px;">
+            <div style="padding:14px; border:1px solid var(--border-color); border-radius:14px; background:rgba(255,255,255,0.02);">
+                <div style="font-weight:700; margin-bottom:8px;">Продать ${player.name}</div>
+                <div style="color:var(--text-muted); font-size:13px; margin-bottom:12px;">Команда ${buyer.name} предлагает выкупить ${player.name} за $${sellPrice.toLocaleString()}.</div>
+                <button class="modal-option-btn" onclick="handleSeasonOffer('sell')">Принять предложение</button>
+            </div>
+            <div style="padding:14px; border:1px solid var(--border-color); border-radius:14px; background:rgba(255,255,255,0.02);">
+                <div style="font-weight:700; margin-bottom:8px;">Предложение возглавить другую команду</div>
+                <div style="color:var(--text-muted); font-size:13px; margin-bottom:12px;">Вам предлагают место главного тренера в другой организации. Вы можете принять решение после сезона.</div>
+                <button class="modal-option-btn" onclick="handleSeasonOffer('coach')">Оценить предложение</button>
+            </div>
+            <div style="padding:14px; border:1px solid var(--border-color); border-radius:14px; background:rgba(255,255,255,0.02);">
+                <div style="font-weight:700; margin-bottom:8px;">Продлить контракт</div>
+                <div style="color:var(--text-muted); font-size:13px; margin-bottom:12px;">Клуб предлагает вам продлить контракт на новый сезон с улучшенными условиями и дополнительными бонусами.</div>
+                <button class="modal-option-btn" onclick="handleSeasonOffer('extend')">Принять продление</button>
+            </div>
+        </div>
+    `;
+    modal.style.display = 'flex';
+}
+
+function closeSeasonOffers() {
+    document.getElementById('season-offer-modal').style.display = 'none';
+}
+
+function handleSeasonOffer(type) {
+    closeSeasonOffers();
+    if(!myTeam) return;
+    if(type === 'sell') {
+        let item = seasonOfferContext;
+        let playerIndex = myTeam.roster.findIndex(p => p.name === item.playerName);
+        if(playerIndex >= 0 && myTeam.roster.length > MIN_ROSTER_SIZE) {
+            let sold = myTeam.roster.splice(playerIndex, 1)[0];
+            clubBalance += item.sellPrice;
+            addTweet("CS2 Transfers", `💰 ${sold.name} продан в ${item.buyerName} за $${item.sellPrice.toLocaleString()}.`);
+            renderRoster();
+            updateHUD();
+        } else {
+            addTweet("CS2 News", `⚠️ Сделка по ${item.playerName} отменена: в составе должно оставаться минимум ${MIN_ROSTER_SIZE} игроков.`);
+        }
+    } else if(type === 'coach') {
+        teamChemistry = Math.min(100, teamChemistry + 8);
+        addTweet("CS2 News", `🎯 Вы получили предложение возглавить другую команду, но предпочли остаться в ${myTeam.name}. Сыгранность команды выросла.`);
+        updateHUD();
+    } else if(type === 'extend') {
+        teamChemistry = Math.min(100, teamChemistry + 5);
+        addTweet("CS2 News", `📝 Контракт продлён: клуб ${myTeam.name} готовит усиленные условия на новый сезон.`);
+        updateHUD();
+    }
+}
+
+function recordTournamentResult(win) {
+    if(seasonState.currentIndex >= seasonState.tournaments.length) return;
+    let current = seasonState.tournaments[seasonState.currentIndex];
+    current.status = 'Завершено';
+    current.result = win ? 'Победа' : 'Поражение';
+    let isSemiLost = bracketMatches.semi1.simulated && bracketMatches.semi1.winner.id !== myTeam.id;
+    current.stage = win ? 'Чемпион' : (isSemiLost ? 'Полуфинал' : 'Финал');
+    if(current.type === 'PGL' && win) seasonState.pglWins += 1;
+    if(current.type === 'Major' && win) seasonState.majorWins += 1;
+    seasonState.currentIndex += 1;
+    renderTournamentCalendar();
+    updateNextTournamentPanel();
 }
 
 // ГЛОБАЛЬНЫЕ ДАННЫЕ ОРГАНИЗАЦИЙ И РОСТЕРОВ (ВСЕ 14 КОМАНД)
@@ -616,25 +908,32 @@ let teamsData = [
         { name: "xelex", skill: 86, moral: 85, role: "Rifler", matches: 100, kd: "1.08", salary: 5800 }
     ]},
     { id: "g2", name: "G2 Esports", logo: LOGOS.G2, skill: 86, form: 76, points: 260, roster: [
-        { name: "Snax", skill: 82, moral: 85, role: "IGL", matches: 70, kd: "0.96", salary: 5000 },
-        { name: "hades", skill: 85, moral: 86, role: "AWPer", matches: 115, kd: "1.08", salary: 4800 },
         { name: "huNter-", skill: 86, moral: 85, role: "Rifler", matches: 175, kd: "1.05", salary: 6200 },
-        { name: "malbsMd", skill: 89, moral: 90, role: "Entry", matches: 65, kd: "1.14", salary: 6000 },
-        { name: "HeavyGod", skill: 85, moral: 88, role: "Rifler", matches: 70, kd: "1.10", salary: 4600 }
+        { name: "NertZ", skill: 84, moral: 84, role: "Entry", matches: 60, kd: "1.02", salary: 5400 },
+        { name: "SunPayus", skill: 83, moral: 82, role: "AWPer", matches: 55, kd: "1.05", salary: 5600 },
+        { name: "HeavyGod", skill: 85, moral: 88, role: "Rifler", matches: 70, kd: "1.10", salary: 4600 },
+        { name: "MATYS", skill: 82, moral: 80, role: "Support", matches: 50, kd: "0.98", salary: 4200 }
     ]},
     { id: "gl", name: "GamerLegion", logo: LOGOS.GL, skill: 83, form: 84, points: 210, roster: [
-        { name: "ztr", skill: 81, moral: 86, role: "IGL", matches: 90, kd: "0.97", salary: 3400 },
-        { name: "sl3nd", skill: 85, moral: 87, role: "AWPer", matches: 75, kd: "1.12", salary: 4000 },
+        { name: "Snax", skill: 82, moral: 85, role: "IGL", matches: 70, kd: "0.96", salary: 5000 },
         { name: "REZ", skill: 85, moral: 82, role: "Rifler", matches: 210, kd: "1.08", salary: 5000 },
         { name: "Tauson", skill: 81, moral: 85, role: "Support", matches: 60, kd: "0.99", salary: 3200 },
-        { name: "PR", skill: 82, moral: 84, role: "Rifler", matches: 45, kd: "1.03", salary: 3300 }
+        { name: "PR", skill: 82, moral: 84, role: "Rifler", matches: 45, kd: "1.03", salary: 3300 },
+        { name: "hypex", skill: 83, moral: 83, role: "AWPer", matches: 55, kd: "1.05", salary: 3600 }
     ]},
     { id: "legacy", name: "Legacy", logo: LOGOS.Legacy, skill: 82, form: 85, points: 175, roster: [
-        { name: "NEKIZ", skill: 80, moral: 90, role: "IGL", matches: 110, kd: "0.98", salary: 3100 },
+        { name: "arT", skill: 84, moral: 88, role: "IGL", matches: 105, kd: "1.05", salary: 3900 },
         { name: "saadzin", skill: 84, moral: 88, role: "AWPer", matches: 70, kd: "1.13", salary: 4200 },
         { name: "dumau", skill: 83, moral: 86, role: "Rifler", matches: 95, kd: "1.08", salary: 3600 },
         { name: "latto", skill: 81, moral: 83, role: "Support", matches: 115, kd: "1.01", salary: 3300 },
-        { name: "lux", skill: 82, moral: 85, role: "Rifler", matches: 80, kd: "1.04", salary: 3500 }
+        { name: "n1ssim", skill: 82, moral: 85, role: "Rifler", matches: 88, kd: "1.06", salary: 3500 }
+    ]},
+    { id: "bcgame", name: "BC GAME", logo: LOGOS.BCGAME, skill: 79, form: 87, points: 250, roster: [
+        { name: "s1mple", skill: 83, moral: 90, role: "AWPer", matches: 250, kd: "1.28", salary: 9000 },
+        { name: "ElectroNic", skill: 80, moral: 87, role: "Rifler", matches: 180, kd: "1.15", salary: 6500 },
+        { name: "Krazy", skill: 77, moral: 86, role: "IGL", matches: 140, kd: "1.05", salary: 5200 },
+        { name: "Scrunk", skill: 72, moral: 85, role: "Support", matches: 120, kd: "1.02", salary: 4500 },
+        { name: "Senzu", skill: 81, moral: 88, role: "Entry", matches: 105, kd: "1.08", salary: 4800 }
     ]}
 ];
 
@@ -687,6 +986,7 @@ let transferActivityTimer = null;
 let seasonRestartTimer = null;
 let seasonRestartInterval = null;
 let bracketAutoRestarted = false;
+let seasonOfferContext = {};
 
 // Флаг последнего трансфера для каждой команды
 teamsData.forEach(t => { if(typeof t.lastTransferTime === 'undefined') t.lastTransferTime = 0; });
@@ -725,6 +1025,7 @@ function selectTeam(id) {
     document.getElementById("my-team-logo").src = myTeam.logo;
     document.getElementById("my-team-logo").style.display = "block";
     
+    initSeasonState();
     updateHUD();
     renderRoster();
     goScreen("screen-main");
@@ -956,7 +1257,11 @@ function buyPlayer(tab, idx) {
             moral: 90,
             role: p.role,
             matches: 0,
-            kd: "1.00"
+            kd: "1.00",
+            salary: p.salary || 4000,
+            startSkill: p.skill,
+            startPrice: p.price,
+            startKD: 1.00
         });
         myTeam.lastTransferTime = Date.now();
         teamChemistry = Math.max(20, teamChemistry - 15); // Приход нового сбивает сыгранность
@@ -1139,37 +1444,40 @@ function signSponsor(name, bonus) {
 
 // ГЕНЕРАЦИЯ СЕТКИ ПЛЕЙ-ОФФ (PGL MAJOR 2026)
 function generateTournamentBracket() {
-    if(myTeam.roster.length < TEAM_ROSTER_LIMIT) {
+    if(!myTeam || myTeam.roster.length < TEAM_ROSTER_LIMIT) {
         alert(`У вас неполный ростер! В команде должно быть ровно ${TEAM_ROSTER_LIMIT} игроков.`);
         return;
     }
+    if(seasonState.currentIndex >= seasonState.tournaments.length) {
+        showSeasonSummary();
+        return;
+    }
     
-    // Берем топ-4 команды рейтинга, включая команду игрока обязательно
+    let current = seasonState.tournaments[seasonState.currentIndex];
     let list = [...teamsData].filter(t => t.id !== myTeam.id && t.roster.length === TEAM_ROSTER_LIMIT);
     if(list.length < 3) {
         alert("Недостаточно команд с полным составом для создания турнира. Подождите, пока рынок стабилизируется.");
         return;
     }
-    // Перемешиваем и берем 3 случайных оппонента
     list.sort(() => Math.random() - Math.random());
     playoffTeams = [myTeam, list[0], list[1], list[2]];
     
-    // Симулируем Полуфинал 2 (где нет игрока)
     let t2 = playoffTeams[2];
     let t3 = playoffTeams[3];
-    let s2_1 = Math.floor(Math.random()*2) + 1; // 1-2
-    let s2_2 = s2_1 === 2 ? Math.floor(Math.random()*2) : 2; 
-    if(s2_1 === s2_2) { s2_1 = 2; s2_2 = 1; }
-    
+    let s2_1 = Math.floor(Math.random()*2) + 1;
+    let s2_2 = s2_1 === 2 ? Math.floor(Math.random()*2) + 1 : 2;
+    if(s2_1 === s2_2) { s2_2 = s2_1 === 2 ? 1 : 2; }
     let semi2_winner = s2_1 > s2_2 ? t2 : t3;
     
     bracketMatches.semi1 = { teamA: myTeam, teamB: playoffTeams[1], scoreA: 0, scoreB: 0, simulated: false, winner: null };
     bracketMatches.semi2 = { teamA: t2, teamB: t3, scoreA: s2_1, scoreB: s2_2, simulated: true, winner: semi2_winner };
     bracketMatches.final = { teamA: null, teamB: semi2_winner, scoreA: 0, scoreB: 0, simulated: false, winner: null };
     
-    currentOpponentTeam = playoffTeams[1]; // Наш первый враг в полуфинале
+    currentOpponentTeam = playoffTeams[1];
     bracketAutoRestarted = false;
     
+    let bracketTitle = document.querySelector('#screen-bracket h2');
+    if(bracketTitle) bracketTitle.innerText = `Матчи Плей-офф ${current.name}`;
     renderBracketView();
     goScreen("screen-bracket");
 }
@@ -1251,9 +1559,11 @@ function scheduleNextTournament(reason) {
     if(seasonRestartInterval) clearInterval(seasonRestartInterval);
     addTweet("CS2 Calendar", "🔥 Начинается новый турнир!");
     if(myTeam && myTeam.roster.length >= TEAM_ROSTER_LIMIT) {
-        generateTournamentBracket();
-        renderBracketView();
-        goScreen("screen-bracket");
+        if(seasonState.currentIndex >= seasonState.tournaments.length) {
+            showSeasonSummary();
+        } else {
+            generateTournamentBracket();
+        }
     } else {
         alert('Ростер не полный, новый турнир не может начаться. Достройте состав до 5 игроков.');
     }
@@ -1279,9 +1589,12 @@ function autoSimulateRemainingBracket() {
         }
     }
 
-    addTweet("CS2 Calendar", "🏁 Турнир завершен. Начинается новый турнир!");
-    if(myTeam && myTeam.roster.length >= TEAM_ROSTER_LIMIT) {
-        generateTournamentBracket();
+    addTweet("CS2 Calendar", "🏁 Турнир завершен.");
+    recordTournamentResult(false);
+    if(seasonState.currentIndex >= seasonState.tournaments.length) {
+        showSeasonSummary();
+    } else {
+        goScreen("screen-main");
     }
 }
 
@@ -1291,6 +1604,23 @@ function simulateBo3Result() {
     return winner === 'A'
         ? { scoreA: 2, scoreB: loserScore, winner: 'A' }
         : { scoreA: loserScore, scoreB: 2, winner: 'B' };
+}
+
+function getCurrentTournament() {
+    return seasonState.tournaments[seasonState.currentIndex] || { name: 'Турнир', type: 'PGL' };
+}
+
+function ensureTournamentWinnerAfterElimination(currentTournament) {
+    if(bracketMatches.final.simulated) return;
+    if(!bracketMatches.final.teamA) {
+        bracketMatches.final.teamA = bracketMatches.semi1.winner;
+    }
+    let result = simulateBo3Result();
+    bracketMatches.final.simulated = true;
+    bracketMatches.final.scoreA = result.scoreA;
+    bracketMatches.final.scoreB = result.scoreB;
+    bracketMatches.final.winner = result.winner === 'A' ? bracketMatches.final.teamA : bracketMatches.final.teamB;
+    addTweet("HLTV Results", `🏆 Победитель ${currentTournament.type} ${currentTournament.name}: ${bracketMatches.final.winner.name}`);
 }
 
 // СЛУЧАЙНЫЕ ЧП ПЕРЕД МАТЧЕМ (ИНЦИДЕНТЫ)
@@ -1364,7 +1694,7 @@ function renderVetoMaps() {
     
     vetoActiveMaps.forEach(m => {
         container.innerHTML += `
-            <div class="map-item" style="background-image: linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)), url('${MAP_IMAGES[m] || 'mirage.png'}')">
+            <div class="map-item" style="background-image: linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)), url('${MAP_IMAGES[m] || IMG_DIR + "mirage.png"}')">
                 <span style="font-weight:900; font-size:18px; letter-spacing:1px; color:#fff;">${m.toUpperCase()}</span>
                 <button onclick="banMap('${m}')" style="background:var(--red-alert); font-size:11px; padding:10px 18px;">Вычеркнуть</button>
             </div>
@@ -1588,8 +1918,90 @@ function simulateMatchRound() {
     }
 }
 
+// СИСТЕМА РОСТА ИГРОКОВ ПО СКИЛУ И СТОИМОСТИ
+function calculatePlayerGrowthBonus(player, team, isWin) {
+    // Базовый рост: игроки в более слабых командах растут быстрее
+    let baseGrowth = isWin ? 1.5 : 0.3;
+    
+    // Коэффициент слабости команды (чем слабже команда, тем больше рост)
+    let avgTeamSkill = team.roster.reduce((acc, p) => acc + p.skill, 0) / team.roster.length;
+    let teamWeakness = Math.max(0.5, (90 - avgTeamSkill) / 20);
+    
+    // Бонус за количество сыгранных матчей (опыт)
+    let experienceBonus = 1 + (player.matches * 0.02);
+    
+    // Бонус за роль (AWPer растет быстрее, Support медленнее)
+    let roleBonus = player.role === "AWPer" ? 1.2 : (player.role === "IGL" ? 1.0 : (player.role === "Support" ? 0.8 : 1.0));
+    
+    // Бонус за мораль (довольные игроки растут быстрее)
+    let moralBonus = 0.8 + (player.moral / 100) * 0.4;
+    
+    let finalGrowth = baseGrowth * teamWeakness * experienceBonus * roleBonus * moralBonus;
+    return Math.round(finalGrowth * 10) / 10;
+}
+
+function updatePlayerGrowth(team, isWin, mapCount = 1) {
+    team.roster.forEach(player => {
+        // Увеличиваем количество сыгранных матчей
+        player.matches = (player.matches || 0) + mapCount;
+        
+        // Рассчитываем бонус к скилу
+        let skillBonus = calculatePlayerGrowthBonus(player, team, isWin);
+        
+        // Применяем рост скила (максимум 100)
+        let newSkill = Math.min(100, player.skill + skillBonus);
+        let skillIncrease = newSkill - player.skill;
+        player.skill = newSkill;
+        
+        // Обновляем K/D на основе пользовательского результата
+        if(isWin) {
+            let kdIncrease = parseFloat((player.kd || "1.00")) + (0.02 * (skillBonus / 2));
+            player.kd = Math.min(2.0, kdIncrease).toFixed(2);
+        }
+        
+        // Незначительный рост стоимости с каждым матчем
+        if(!player.price) {
+            player.price = Math.max(12000, Math.round(player.skill * 700 + (player.salary || 3000) * 8));
+        }
+        player.price = Math.round(player.price * (1 + skillIncrease * 0.015));
+    });
+}
+
+function updateMarketPricesAfterGrowth() {
+    // Обновляем цены всех игроков на рынке
+    marketPlayers.stars.forEach(p => {
+        p.price = Math.max(12000, Math.round(p.skill * 700 + (p.salary || 3000) * 8));
+    });
+    marketPlayers.faceit.forEach(p => {
+        p.price = Math.max(12000, Math.round(p.skill * 700 + (p.salary || 3000) * 8));
+    });
+}
+
+function announcePlayerGrowth(team) {
+    let growthMessages = [];
+    team.roster.forEach(p => {
+        if(p.skill >= 85 && p.skill < 87) {
+            growthMessages.push(`⚡ ${p.name} приближается к элитному уровню (Скилл ${Math.round(p.skill)})`);
+        } else if(p.skill >= 87) {
+            growthMessages.push(`🌟 ${p.name} входит в топ-игроки мира! (Скилл ${Math.round(p.skill)})`);
+        }
+    });
+    growthMessages.forEach(msg => addTweet("Player Development", msg));
+}
+
 function onMapFinished() {
-    if(scoreA > scoreB) seriesScoreA++; else seriesScoreB++;
+    if(scoreA > scoreB) {
+        seriesScoreA++;
+        // Применяем рост победившей команде
+        updatePlayerGrowth(myTeam, true, 1);
+        updatePlayerGrowth(currentOpponentTeam, false, 1);
+    } else {
+        seriesScoreB++;
+        // Применяем рост победившей команде
+        updatePlayerGrowth(myTeam, false, 1);
+        updatePlayerGrowth(currentOpponentTeam, true, 1);
+    }
+    
     document.getElementById("hud-series-a").innerText = seriesScoreA;
     document.getElementById("hud-series-b").innerText = seriesScoreB;
     
@@ -1615,6 +2027,7 @@ function closeMatchAndOpenPress() {
     opt.innerHTML = "";
     
     let isSemi = !bracketMatches.semi1.simulated;
+    let currentTournament = getCurrentTournament();
     
     if(seriesScoreA > seriesScoreB) {
         // Мы выиграли матч
@@ -1625,7 +2038,7 @@ function closeMatchAndOpenPress() {
             bracketMatches.semi1.winner = myTeam;
             bracketMatches.final.teamA = myTeam; // Проходим в финал
             
-            q.innerText = "Журналист HLTV: Поздравляем с чистой победой и выходом в финал Мейджора! Что помогло вам забрать серию?";
+            q.innerText = "Журналист HLTV: Поздравляем с чистой победой и выходом в финал! Что помогло вам забрать серию?";
             opt.innerHTML += `<button onclick="finishPress(true, 'tactics')">«Наши тактики и заготовки сработали идеально»</button>`;
             opt.innerHTML += `<button onclick="finishPress(true, 'hype')">«Мы просто жестче стреляем, у врагов не было шансов»</button>`;
         } else {
@@ -1635,7 +2048,7 @@ function closeMatchAndOpenPress() {
             bracketMatches.final.scoreB = seriesScoreB;
             bracketMatches.final.winner = myTeam;
             
-            q.innerText = "Репортер: Невероятно! Вы чемпионы PGL Major 2026! Кубок ваш! Какие эмоции испытывает организация?";
+            q.innerText = `Репортер: Невероятно! Вы чемпионы ${currentTournament.type} ${currentTournament.name}! Кубок ваш!`; 
             opt.innerHTML += `<button onclick="finishPress(true, 'champion')">«Это заслуга всей команды и буткемпа. Мы вписали себя в историю!»</button>`;
         }
     } else {
@@ -1645,49 +2058,82 @@ function closeMatchAndOpenPress() {
             bracketMatches.semi1.scoreA = seriesScoreA;
             bracketMatches.semi1.scoreB = seriesScoreB;
             bracketMatches.semi1.winner = currentOpponentTeam;
+            ensureTournamentWinnerAfterElimination(currentTournament);
+            q.innerText = `Журналист: Обидное поражение и вылет. Победитель ${currentTournament.type} ${currentTournament.name}: ${bracketMatches.final.winner.name}. Что будете делать дальше?`;
         } else {
             bracketMatches.final.simulated = true;
             bracketMatches.final.scoreA = seriesScoreA;
             bracketMatches.final.scoreB = seriesScoreB;
             bracketMatches.final.winner = currentOpponentTeam;
+            q.innerText = `Репортер: Финал проигран. Победитель ${currentTournament.type} ${currentTournament.name}: ${bracketMatches.final.winner.name}. Какие выводы сделаете?`;
         }
         
-        q.innerText = "Журналист: Обидное поражение и вылет. Болельщики свистят, руководство в ярости. Будут ли кадровые изменения и кики?";
         opt.innerHTML += `<button onclick="finishPress(false, 'disband')">«Мы разберем ошибки, сделаем замены на рынке и вернемся сильнее»</button>`;
         opt.innerHTML += `<button onclick="finishPress(false, 'blame')">«Игроки не выполнили установку на матч. Виноваты девайсы.»</button>`;
     }
 }
 
 function finishPress(win, answerType) {
+    let isSemi = !bracketMatches.semi1.simulated;
+    let currentTournament = getCurrentTournament();
+    updatePlayerGrowth(myTeam, win, 0.5);
+    updatePlayerGrowth(currentOpponentTeam, !win, 0.5);
+    updateMarketPricesAfterGrowth();
+    
     if(win) {
         let cashPrize = 80000;
-        if(answerType === 'champion') cashPrize = 250000; // Бонус за чемпионство Мейджора
-        
+        if(!isSemi && answerType === 'champion') cashPrize = 250000;
         clubBalance += cashPrize;
-        myTeam.points += win ? 150 : 0;
+        myTeam.points += 150;
         myTeam.roster.forEach(p => p.moral = Math.min(100, p.moral + 15));
-        
+        announcePlayerGrowth(myTeam);
         addTweet("HLTV News", `🏆 Интервью завершено. Менеджер ${myTeam.name} похвалил игроков. Организация забирает призовые!`);
     } else {
-        myTeam.roster.forEach(p => p.moral = Math.max(10, p.moral - 20)); // Сильный удар по морали
-        if(answerType === 'blame') teamChemistry = Math.max(0, teamChemistry - 20); // Ссора в составе
-        
+        myTeam.roster.forEach(p => p.moral = Math.max(10, p.moral - 20));
+        if(answerType === 'blame') teamChemistry = Math.max(0, teamChemistry - 20);
         addTweet("HLTV News", `❌ Грустное интервью на стриме. Атмосфера внутри ${myTeam.name} накалена до предела.`);
     }
-    
-    if(!win) {
-        if(bracketMatches.semi1.simulated && bracketMatches.semi1.winner.id !== myTeam.id) {
-            autoSimulateRemainingBracket();
+
+    if(isSemi) {
+        bracketMatches.semi1.simulated = true;
+        bracketMatches.semi1.scoreA = seriesScoreA;
+        bracketMatches.semi1.scoreB = seriesScoreB;
+        bracketMatches.semi1.winner = win ? myTeam : currentOpponentTeam;
+        if(win) {
+            bracketMatches.final.teamA = myTeam;
+            bracketMatches.final.teamB = bracketMatches.final.teamB || bracketMatches.semi2.winner;
+            currentOpponentTeam = bracketMatches.final.teamB;
+            renderBracketView();
+            goScreen("screen-bracket");
+            return;
+        }
+        if(!win) {
+            ensureTournamentWinnerAfterElimination(currentTournament);
+        }
+    }
+
+    if(!isSemi || !win) {
+        if(!isSemi) {
+            bracketMatches.final.simulated = true;
+            bracketMatches.final.scoreA = seriesScoreA;
+            bracketMatches.final.scoreB = seriesScoreB;
+            bracketMatches.final.winner = win ? myTeam : currentOpponentTeam;
+            if(!win && !bracketMatches.final.winner) {
+                bracketMatches.final.winner = currentOpponentTeam;
+            }
+        }
+        recordTournamentResult(win);
+        if(seasonState.currentIndex >= seasonState.tournaments.length) {
+            showSeasonSummary();
         } else {
+            addTweet("CS2 Calendar", `🔥 После ${currentTournament.name} начинается следующий турнир: ${seasonState.tournaments[seasonState.currentIndex].name}`);
             generateTournamentBracket();
         }
-    } else if(win && answerType === 'champion') {
-        generateTournamentBracket();
     }
     updateHUD();
     renderBracketView();
-    goScreen("screen-bracket");
 }
+
 // ФУНКЦИИ ПЛАШКИ УПРАВЛЕНИЯ
 function renderManagePanel() {
     let list = document.getElementById("manage-roster-list");
