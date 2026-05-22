@@ -230,6 +230,13 @@
         .modal-box { background: var(--panel-bg); border: 2px solid var(--border-color); padding: 35px; border-radius: 20px; max-width: 550px; width: 90%; box-shadow: 0 20px 50px rgba(0,0,0,0.6); }
         .modal-option-btn { background: var(--card-bg); text-transform: none; text-align: left; width: 100%; margin-bottom: 12px; padding: 16px; border: 1px solid var(--border-color); color: #fff; border-radius: 10px; cursor: pointer;}
         .modal-option-btn:hover { border-color: var(--accent-cyan); box-shadow: 0 0 15px var(--accent-cyan-glow); }
+
+        /* Preview popup for team cards */
+        .team-preview-popup { position: absolute; z-index: 3000; background: linear-gradient(180deg, rgba(8,12,18,0.98), rgba(6,8,12,0.98)); border:1px solid rgba(255,255,255,0.04); padding:12px 14px; border-radius:12px; box-shadow: 0 10px 40px rgba(0,0,0,0.7); display:none; min-width:260px; }
+        .team-preview-avatars { display:flex; gap:8px; align-items:center; }
+        .team-preview-avatars img { width:48px; height:48px; border-radius:8px; object-fit:cover; border:1px solid rgba(255,255,255,0.04); }
+        .team-preview-title { font-weight:900; margin-bottom:8px; color:#fff; }
+
     </style>
 </head>
 <body>
@@ -309,6 +316,58 @@ document.addEventListener('click', function(e) {
     </div>
 </div>
 
+<!-- Модал переговоров при продаже игрока -->
+<div id="negotiation-modal" class="modal-overlay">
+    <div class="modal-box">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <div style="font-weight:900;">💬 Переговоры по трансферу</div>
+            <div id="neg-buyer" style="font-size:12px; color:var(--text-muted);"></div>
+        </div>
+        <div id="neg-chat" style="height:180px; overflow-y:auto; background:#020204; padding:12px; border-radius:10px; border:1px solid var(--border-color); margin-bottom:12px;"></div>
+        <div style="display:flex; gap:8px;">
+            <input id="neg-offer-input" style="flex:1; padding:10px; background:var(--card-bg); border:1px solid var(--border-color); color:#fff; border-radius:8px;" />
+            <button onclick="sendNegotiationOffer()" style="padding:10px 16px;">Отправить</button>
+        </div>
+        <div style="display:flex; gap:8px; margin-top:12px;">
+            <button onclick="acceptNegotiation()" style="flex:1; background:var(--green-money); color:#000;">Принять текущую</button>
+            <button onclick="closeNegotiation()" style="flex:1; background:#222634;">Отмена</button>
+        </div>
+    </div>
+</div>
+
+<div id="free-agent-modal" class="modal-overlay">
+    <div class="modal-box">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <div style="font-weight:900;">💼 Согласование зарплаты свободного агента</div>
+            <div id="free-agent-name" style="font-size:12px; color:var(--text-muted);"></div>
+        </div>
+        <p id="free-agent-prompt" style="color:var(--text-muted); margin-bottom:12px;">Введите зарплату, которую хотите предложить игроку.</p>
+        <div style="display:flex; gap:8px; margin-bottom:12px;">
+            <input id="free-agent-salary-input" type="number" min="10000" style="flex:1; padding:10px; background:var(--card-bg); border:1px solid var(--border-color); color:#fff; border-radius:8px;" placeholder="Предложение зарплаты" />
+            <button onclick="submitFreeAgentSalary()" style="padding:10px 16px; background:var(--accent-cyan); color:#000;">Согласовать</button>
+        </div>
+        <div id="free-agent-chat" style="height:160px; overflow-y:auto; background:#020204; padding:12px; border-radius:10px; border:1px solid var(--border-color); color:#fff;"></div>
+        <div style="display:flex; gap:8px; margin-top:12px;">
+            <button onclick="acceptFreeAgentSalary()" style="flex:1; background:var(--green-money); color:#000;">Принять текущее</button>
+            <button onclick="closeFreeAgentModal()" style="flex:1; background:#222634;">Отмена</button>
+        </div>
+    </div>
+</div>
+
+<!-- Модал выбора команды для предложения игрока -->
+<div id="sell-to-team-modal" class="modal-overlay">
+    <div class="modal-box">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <div style="font-weight:900;">🔁 Кому предложить игрока?</div>
+            <div id="sell-player-name" style="font-size:12px; color:var(--text-muted);"></div>
+        </div>
+        <div id="sell-to-team-list" style="display:grid; gap:8px; max-height:320px; overflow-y:auto; margin-bottom:12px;"></div>
+        <div style="display:flex; gap:8px;">
+            <button onclick="closeSellToTeam()" style="flex:1; background:#222634;">Отмена</button>
+        </div>
+    </div>
+</div>
+
 <div id="kick-modal" class="modal-overlay">
     <div class="modal-box">
         <h3>🚫 Увольнение игрока</h3>
@@ -362,10 +421,10 @@ document.addEventListener('click', function(e) {
                 <div id="roster-list"></div>
                 <h2 style="margin-top: 25px;">🏢 Улучшения</h2>
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
-                    <button onclick="buyUpgrade('monitors')" id="up-monitors" style="background:#1b1e2a; border:1px solid var(--border-color); padding:12px;">🖥️ Мониторы 540Hz ($25k)<br><span style="color:var(--text-muted); font-size:10px;">+2 к скиллу ростера</span></button>
-                    <button onclick="buyUpgrade('psychologist')" id="up-psychologist" style="background:#1b1e2a; border:1px solid var(--border-color); padding:12px;">🧠 Топ-Психолог ($30k)<br><span style="color:var(--text-muted); font-size:10px;">Стабилизирует мораль</span></button>
-                    <button onclick="buyUpgrade('media')" id="up-media" style="background:#1b1e2a; border:1px solid var(--border-color); padding:12px;">📱 Студия контента ($40k)<br><span style="color:var(--text-muted); font-size:10px;">+30% притока от спонсоров</span></button>
-                    <button onclick="buyBootcamp()" style="background:#1b1e2a; border:1px solid var(--border-color); padding:12px;">💻 Собрать Буткемп ($15k)<br><span style="color:var(--text-muted); font-size:10px;">Сыгранность +10%</span></button>
+                    <button onclick="buyUpgrade('monitors')" id="up-monitors" style="background:#1b1e2a; border:1px solid var(--border-color); padding:12px;">🖥️ Мониторы 540Hz (750k)<br><span style="color:var(--text-muted); font-size:10px;">+2 к скиллу ростера</span></button>
+                    <button onclick="buyUpgrade('psychologist')" id="up-psychologist" style="background:#1b1e2a; border:1px solid var(--border-color); padding:12px;">🧠 Топ-Психолог (500k)<br><span style="color:var(--text-muted); font-size:10px;">Стабилизирует мораль</span></button>
+                    <button onclick="buyUpgrade('media')" id="up-media" style="background:#1b1e2a; border:1px solid var(--border-color); padding:12px;">📱 Студия контента (800k)<br><span style="color:var(--text-muted); font-size:10px;">+30% притока от спонсоров</span></button>
+                    <button onclick="buyBootcamp()" style="background:#1b1e2a; border:1px solid var(--border-color); padding:12px;">💻 Собрать Буткемп (400k)<br><span style="color:var(--text-muted); font-size:10px;">Сыгранность +10%</span></button>
                 </div>
             </div>
             <div class="panel" style="display:flex; flex-direction:column; gap:18px;">
@@ -609,6 +668,7 @@ function initSeasonState() {
     seasonState.currentIndex = 0;
     seasonState.pglWins = 0;
     seasonState.majorWins = 0;
+    seasonState.hltvPointsGained = 0;
     seasonState.startSkill = Math.round(myTeam.roster.reduce((sum, p) => sum + p.skill, 0) / myTeam.roster.length);
     seasonState.startValue = myTeam.roster.reduce((sum, p) => sum + (p.price || getTransferOfferPrice(p)), 0);
     seasonState.startKD = calculateTeamAverageKD(myTeam);
@@ -617,6 +677,14 @@ function initSeasonState() {
         p.startPrice = p.price || getTransferOfferPrice(p);
         p.startKD = parseFloat(p.kd) || 1.00;
     });
+    playoffTeams = [];
+    bracketMatches = { semi1: null, semi2: null, final: null };
+    currentOpponentTeam = null;
+    bracketAutoRestarted = false;
+    currentMapIdx = 0;
+    matchMaps = [];
+    seriesScoreA = 0;
+    seriesScoreB = 0;
     renderTournamentCalendar();
     updateNextTournamentPanel();
 }
@@ -731,6 +799,14 @@ function showSeasonSummary() {
     modal.style.display = 'flex';
 }
 
+/* Стилизация итогового модального окна сезона — красивый шрифт и свечения */
+const seasonModalBox = document.querySelector('#season-summary-modal .modal-box');
+if(seasonModalBox) {
+    seasonModalBox.style.fontFamily = "Orbitron, 'Inter', sans-serif";
+    seasonModalBox.style.textShadow = '0 2px 18px rgba(0,255,204,0.12)';
+    seasonModalBox.style.boxShadow = '0 10px 40px rgba(0,255,204,0.06)';
+}
+
 function closeSeasonSummary() {
     document.getElementById('season-summary-modal').style.display = 'none';
 }
@@ -752,27 +828,37 @@ function openSeasonOffers() {
     let content = document.getElementById('season-offer-content');
     if(!modal || !content || !myTeam) return;
 
-    let player = myTeam.roster[0] || { name: 'Игрок', price: 20000 };
-    let buyer = teamsData.find(t => t.id !== myTeam.id) || teamsData[0];
+    let player = myTeam.roster[Math.floor(Math.random() * myTeam.roster.length)] || { name: 'Игрок', price: 20000 };
+    let buyerOptions = teamsData.filter(t => t.id !== myTeam.id && t.roster.length < TEAM_ROSTER_LIMIT);
+    if(buyerOptions.length === 0) buyerOptions = teamsData.filter(t => t.id !== myTeam.id);
+    let sellBuyer = buyerOptions[Math.floor(Math.random() * buyerOptions.length)] || teamsData[0];
+    let coachBuyerOptions = teamsData.filter(t => t.id !== myTeam.id && t.id !== sellBuyer.id);
+    let coachBuyer = coachBuyerOptions.length ? coachBuyerOptions[Math.floor(Math.random() * coachBuyerOptions.length)] : sellBuyer;
     let sellPrice = Math.round((player.price || getTransferOfferPrice(player)) * 1.1);
 
     seasonOfferContext = {
         playerName: player.name,
-        buyerName: buyer.name,
-        sellPrice
+        playerIdx: myTeam.roster.findIndex(p => p.name === player.name),
+        buyerName: sellBuyer.name,
+        buyerTeamId: sellBuyer.id,
+        sellPrice,
+        coachBuyerName: coachBuyer.name
     };
 
     content.innerHTML = `
         <div style="display:grid; gap:14px;">
             <div style="padding:14px; border:1px solid var(--border-color); border-radius:14px; background:rgba(255,255,255,0.02);">
                 <div style="font-weight:700; margin-bottom:8px;">Продать ${player.name}</div>
-                <div style="color:var(--text-muted); font-size:13px; margin-bottom:12px;">Команда ${buyer.name} предлагает выкупить ${player.name} за $${sellPrice.toLocaleString()}.</div>
+                <div style="color:var(--text-muted); font-size:13px; margin-bottom:12px;">Команда ${sellBuyer.name} предлагает выкупить ${player.name} за $${sellPrice.toLocaleString()}.</div>
                 <button class="modal-option-btn" onclick="handleSeasonOffer('sell')">Принять предложение</button>
             </div>
-            <div style="padding:14px; border:1px solid var(--border-color); border-radius:14px; background:rgba(255,255,255,0.02);">
-                <div style="font-weight:700; margin-bottom:8px;">Предложение возглавить другую команду</div>
-                <div style="color:var(--text-muted); font-size:13px; margin-bottom:12px;">Вам предлагают место главного тренера в другой организации. Вы можете принять решение после сезона.</div>
-                <button class="modal-option-btn" onclick="handleSeasonOffer('coach')">Оценить предложение</button>
+            <div style="padding:14px; border:1px solid var(--border-color); border-radius:14px; background:rgba(255,255,255,0.02); display:flex; gap:12px; align-items:center;">
+                <img src="${coachBuyer.logo || 'https://liquipedia.net/commons/images/a/a2/No_avatar.png'}" style="width:64px; height:64px; object-fit:contain; border-radius:8px; border:1px solid rgba(255,255,255,0.04);">
+                <div style="flex:1;">
+                    <div style="font-weight:700; margin-bottom:6px;">Предложение возглавить: ${coachBuyer.name}</div>
+                    <div style="color:var(--text-muted); font-size:13px; margin-bottom:8px;">Организация ${coachBuyer.name} прислала официальное предложение стать главным тренером. Срок вступления — следующий сезон.</div>
+                    <button class="modal-option-btn" onclick="handleSeasonOffer('coach')">Оценить предложение</button>
+                </div>
             </div>
             <div style="padding:14px; border:1px solid var(--border-color); border-radius:14px; background:rgba(255,255,255,0.02);">
                 <div style="font-weight:700; margin-bottom:8px;">Продлить контракт</div>
@@ -792,17 +878,10 @@ function handleSeasonOffer(type) {
     closeSeasonOffers();
     if(!myTeam) return;
     if(type === 'sell') {
+        // Открываем окно переговоров с ИИ-покупателем
         let item = seasonOfferContext;
-        let playerIndex = myTeam.roster.findIndex(p => p.name === item.playerName);
-        if(playerIndex >= 0 && myTeam.roster.length > MIN_ROSTER_SIZE) {
-            let sold = myTeam.roster.splice(playerIndex, 1)[0];
-            clubBalance += item.sellPrice;
-            addTweet("CS2 Transfers", `💰 ${sold.name} продан в ${item.buyerName} за $${item.sellPrice.toLocaleString()}.`);
-            renderRoster();
-            updateHUD();
-        } else {
-            addTweet("CS2 News", `⚠️ Сделка по ${item.playerName} отменена: в составе должно оставаться минимум ${MIN_ROSTER_SIZE} игроков.`);
-        }
+        openNegotiation(item.playerName, item.buyerName, item.sellPrice, item.buyerTeamId, item.playerIdx);
+        return;
     } else if(type === 'coach') {
         teamChemistry = Math.min(100, teamChemistry + 8);
         addTweet("CS2 News", `🎯 Вы получили предложение возглавить другую команду, но предпочли остаться в ${myTeam.name}. Сыгранность команды выросла.`);
@@ -980,7 +1059,7 @@ let activeKickingIndex = -1;
 
 let transferCooldown = 120000; // 2 минуты
 const TEAM_ROSTER_LIMIT = 5;
-const MIN_ROSTER_SIZE = 5;
+const MIN_ROSTER_SIZE = 4;
 let matchSpeed = 1;
 let transferActivityTimer = null;
 let seasonRestartTimer = null;
@@ -992,11 +1071,11 @@ let seasonOfferContext = {};
 teamsData.forEach(t => { if(typeof t.lastTransferTime === 'undefined') t.lastTransferTime = 0; });
 
 // ИНИЦИАЛИЗАЦИЯ И СТАРТ
-window.onload = function() {
+window.addEventListener('load', function() {
     renderSelectScreen();
     generateTwitterFeed();
     startTransferMarketSimulation();
-};
+});
 
 function goScreen(id) {
     document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
@@ -1006,10 +1085,11 @@ function goScreen(id) {
 
 function renderSelectScreen() {
     let container = document.getElementById("select-teams-list");
+    if(!container) return;
     container.innerHTML = "";
     teamsData.forEach(t => {
         container.innerHTML += `
-            <div class="team-select-card" onclick="selectTeam('${t.id}')">
+            <div class="team-select-card" onclick="confirmSelectTeam('${t.id}')" onmouseenter="showTeamPreview('${t.id}', event)" onmouseleave="hideTeamPreview()">
                 <img src="${t.logo}" class="team-logo-img" onerror="this.src='https://liquipedia.net/commons/images/a/a2/No_avatar.png'">
                 <h3 style="margin:10px 0 5px 0; font-size:19px;">${t.name}</h3>
                 <div style="font-size:13px; color:var(--text-muted); font-family:'JetBrains Mono';">Рейтинг HLTV: #${teamsData.indexOf(t)+1}</div>
@@ -1018,13 +1098,24 @@ function renderSelectScreen() {
         `;
     });
 }
+renderSelectScreen();
 
 function selectTeam(id) {
     myTeam = teamsData.find(t => t.id === id);
     document.getElementById("my-team-name").innerText = myTeam.name;
     document.getElementById("my-team-logo").src = myTeam.logo;
     document.getElementById("my-team-logo").style.display = "block";
-    
+    // Установим стартовый бюджет клуба в диапазоне 1.5 - 3 млн
+    clubBalance = Math.round(1500000 + Math.random() * 1500000);
+
+    // Приведём зарплаты игроков к сезонным значениям 30k - 80k, если они слишком малы
+    myTeam.roster.forEach(p => {
+        if(!p.salary || p.salary < 30000) {
+            p.salary = 30000 + Math.floor(Math.random() * 50000); // 30k..80k
+        }
+    });
+
+    currentSponsor = null;
     initSeasonState();
     updateHUD();
     renderRoster();
@@ -1072,7 +1163,7 @@ function closeKickModal() {
 function confirmKick(reason) {
     if(activeKickingIndex === -1) return;
     if(myTeam.roster.length <= MIN_ROSTER_SIZE) {
-        alert(`Нельзя выгнать игрока: в команде должно оставаться ровно ${TEAM_ROSTER_LIMIT} игроков.`);
+        alert(`Нельзя выгнать игрока: в команде должно оставаться минимум ${MIN_ROSTER_SIZE} игроков.`);
         return;
     }
     let kickedPlayer = myTeam.roster[activeKickingIndex];
@@ -1126,8 +1217,9 @@ function switchMainTab(tab) {
 // СИСТЕМЫ СУБ-ВКЛАДОК: СУПЕР-АПКЕЙТЫ БАЗЫ
 function buyUpgrade(type) {
     if(type === 'monitors' && !boughtUpgrades.monitors) {
-        if(clubBalance >= 25000) {
-            clubBalance -= 25000; boughtUpgrades.monitors = true;
+        const COST = 750000;
+        if(clubBalance >= COST) {
+            clubBalance -= COST; boughtUpgrades.monitors = true;
             myTeam.roster.forEach(p => p.skill += 2);
             document.getElementById("up-monitors").disabled = true;
             document.getElementById("up-monitors").innerText = "🖥️ Мониторы куплены (+2 Скилл)";
@@ -1135,8 +1227,9 @@ function buyUpgrade(type) {
         } else alert("Недостаточно денег!");
     }
     if(type === 'psychologist' && !boughtUpgrades.psychologist) {
-        if(clubBalance >= 30000) {
-            clubBalance -= 30000; boughtUpgrades.psychologist = true;
+        const COST = 500000;
+        if(clubBalance >= COST) {
+            clubBalance -= COST; boughtUpgrades.psychologist = true;
             myTeam.roster.forEach(p => p.moral = Math.min(100, p.moral + 20));
             document.getElementById("up-psychologist").disabled = true;
             document.getElementById("up-psychologist").innerText = "🧠 Психолог нанят (Мораль стабильна)";
@@ -1144,8 +1237,9 @@ function buyUpgrade(type) {
         } else alert("Недостаточно денег!");
     }
     if(type === 'media' && !boughtUpgrades.media) {
-        if(clubBalance >= 40000) {
-            clubBalance -= 40000; boughtUpgrades.media = true;
+        const COST = 800000;
+        if(clubBalance >= COST) {
+            clubBalance -= COST; boughtUpgrades.media = true;
             document.getElementById("up-media").disabled = true;
             document.getElementById("up-media").innerText = "📱 Медиастудия запущена (+30% прибыли)";
             updateHUD();
@@ -1154,8 +1248,9 @@ function buyUpgrade(type) {
 }
 
 function buyBootcamp() {
-    if(clubBalance >= 15000) {
-        clubBalance -= 15000;
+    const COST = 400000;
+    if(clubBalance >= COST) {
+        clubBalance -= COST;
         teamChemistry = Math.min(100, teamChemistry + 10);
         addTweet("Bootcamp Live", `📸 Игроки прилетели на буткемп! Командные связи улучшаются с каждым днем.`);
         updateHUD();
@@ -1215,6 +1310,9 @@ function renderMarket() {
     let statusText = document.getElementById("market-status");
     if(statusText) statusText.innerText = myTeam ? getTransferCooldownText(myTeam) : "Сначала выберите команду для управления, чтобы открывать трансферы.";
     players.forEach((p, idx) => {
+        let freeAgent = isFreeAgent(p);
+        let priceLabel = freeAgent ? 'Бесплатно' : '$' + ((p.price && p.price>1000000) ? p.price : getTransferOfferPrice(p)).toLocaleString();
+        let buttonLabel = freeAgent ? 'Согласовать зарплату' : (marketLocked ? 'Закупка недоступна' : 'Контракт');
         list.innerHTML += `
             <div class="player-card">
                 <div class="p-info">
@@ -1226,8 +1324,8 @@ function renderMarket() {
                 </div>
                 <div style="display:flex; align-items:center; gap:20px;">
                     <div class="p-badge">⚡ Скилл: ${p.skill}</div>
-                    <div class="p-badge" style="color:var(--green-money); border-color:rgba(0,255,102,0.1);">Цена: $${p.price.toLocaleString()}</div>
-                    <button onclick="buyPlayer('${currentMarketTab}', ${idx})" ${marketLocked ? 'disabled' : ''}>${marketLocked ? 'Закупка недоступна' : 'Контракт'}</button>
+                    <div class="p-badge" style="color:var(--green-money); border-color:rgba(0,255,102,0.1);">Цена: ${priceLabel}</div>
+                    <button onclick="buyPlayer('${currentMarketTab}', ${idx})" ${marketLocked ? 'disabled' : ''}>${buttonLabel}</button>
                 </div>
             </div>
         `;
@@ -1248,8 +1346,14 @@ function buyPlayer(tab, idx) {
         return;
     }
     let p = marketPlayers[tab][idx];
-    if(clubBalance >= p.price) {
-        clubBalance -= p.price;
+    let freeAgent = isFreeAgent(p);
+    if(freeAgent) {
+        openFreeAgentSalaryNegotiation(tab, idx);
+        return;
+    }
+    let cost = (p.price && p.price > 1000000) ? p.price : getTransferOfferPrice(p);
+    if(clubBalance >= cost) {
+        clubBalance -= cost;
         marketPlayers[tab].splice(idx, 1);
         myTeam.roster.push({
             name: p.name,
@@ -1258,9 +1362,9 @@ function buyPlayer(tab, idx) {
             role: p.role,
             matches: 0,
             kd: "1.00",
-            salary: p.salary || 4000,
+            salary: p.salary || 40000,
             startSkill: p.skill,
-            startPrice: p.price,
+            startPrice: cost,
             startKD: 1.00
         });
         myTeam.lastTransferTime = Date.now();
@@ -1275,8 +1379,29 @@ function buyPlayer(tab, idx) {
     }
 }
 
+function isFreeAgent(p) {
+    return p && p.org && p.org.toString().toLowerCase().includes('свободный агент');
+}
+
 function getTransferOfferPrice(p) {
-    return Math.max(12000, Math.round(p.skill * 700 + (p.salary || 3000) * 8));
+    if(isFreeAgent(p)) return 0;
+    // Цена теперь в диапазоне примерно 10 000 000 - 20 000 000 в зависимости от скилла
+    let skill = p.skill || 50;
+    // нормируем скилл 50..100 -> 0..1
+    let t = Math.max(0, Math.min(1, (skill - 50) / 50));
+    let base = Math.round(10000000 + t * 10000000); // 10M .. 20M
+    // небольшая надбавка от зарплаты
+    let salaryFactor = (p.salary || 30000) / 80000; // 0.375..1
+    // небольшой бонус если игрок принадлежит сильной команде (указывается в p.org)
+    let teamBonus = 0;
+    if(p.org) {
+        let t = teamsData.find(tt => tt.name === p.org || tt.id === (p.org || '').toLowerCase());
+        if(t) {
+            teamBonus = Math.max(0, (t.skill - 80) / 80) * 0.12; // до +12%
+        }
+    }
+    let final = Math.round(base * (0.9 + 0.25 * salaryFactor + teamBonus));
+    return final;
 }
 
 function canTeamTransfer(team) {
@@ -1289,7 +1414,7 @@ function sellPlayer(idx) {
         return;
     }
     if(myTeam.roster.length <= MIN_ROSTER_SIZE) {
-        alert(`Нельзя продать игрока. В команде должно оставаться ровно ${TEAM_ROSTER_LIMIT} игроков.`);
+        alert(`Нельзя продать игрока. В команде должно оставаться минимум ${MIN_ROSTER_SIZE} игроков.`);
         return;
     }
     if(Date.now() - myTeam.lastTransferTime < transferCooldown) {
@@ -1405,10 +1530,10 @@ function renderHLTV() {
 
 // СПОНСОРЫ И БУКМЕКЕРЫ
 const SPONSORS_LIST = [
-    { name: "BetBoom (Букмекер)", bonus: 60000, desc: "Огромный стартовый кэш, но фанаты в твиттере будут недовольны партнерством." },
-    { name: "Intel Gaming", bonus: 35000, desc: "Стабильный технологический спонсор. Поднимает репутацию организации." },
-    { name: "1XBet (Бетка)", bonus: 75000, desc: "Самый большой куш на рынке! Моментальное пополнение бюджета организации." },
-    { name: "Monster Energy", bonus: 25000, desc: "Обеспечивает команду энергетиками. Повышает медийность." }
+    { name: "BetBoom (Букмекер)", bonus: 300000, desc: "Огромый сезонный контракт — существенная прибыль, но критика фанатов возможна." },
+    { name: "Intel Gaming", bonus: 260000, desc: "Технологический спонсор. Поднимает репутацию организации." },
+    { name: "1XBet (Бетка)", bonus: 400000, desc: "Крупнейший партнёр: большой денежный влив и публичность." },
+    { name: "Monster Energy", bonus: 250000, desc: "Спонсор медиа- и сценического контента. Улучшает видимость команды." }
 ];
 
 function renderSponsors() {
@@ -1542,15 +1667,23 @@ function renderBracketView() {
         </div>
     `;
     let btn = document.getElementById("btn-enter-server");
-    if(bracketMatches.semi1.simulated && bracketMatches.semi1.winner.id !== myTeam.id) {
+    if(bracketMatches.semi1 && !bracketMatches.semi1.simulated) {
+        btn.innerText = "Выйти на сервер";
+        btn.onclick = function() { checkIncidentsBeforeMatch(); };
+        currentOpponentTeam = bracketMatches.semi1.teamB;
+    } else if(bracketMatches.semi1 && bracketMatches.semi1.simulated && bracketMatches.semi1.winner.id !== myTeam.id) {
         btn.innerText = "Вы вылетели с турнира. Вернуться на базу.";
         btn.onclick = function() { goScreen("screen-main"); };
-    } else if(bracketMatches.semi1.simulated && !bracketMatches.final.simulated) {
+    } else if(bracketMatches.semi1 && bracketMatches.semi1.simulated && !bracketMatches.final.simulated) {
         btn.innerText = "Выйти на сервер Гранд-Финала";
+        btn.onclick = function() { checkIncidentsBeforeMatch(); };
         currentOpponentTeam = bracketMatches.final.teamB;
-    } else if(bracketMatches.final.simulated) {
+    } else if(bracketMatches.final && bracketMatches.final.simulated) {
         btn.innerText = "Турнир завершен. Вернуться в панель управления";
         btn.onclick = function() { goScreen("screen-main"); };
+    } else {
+        btn.innerText = "Выйти на сервер";
+        btn.onclick = function() { checkIncidentsBeforeMatch(); };
     }
 }
 
@@ -1625,6 +1758,14 @@ function ensureTournamentWinnerAfterElimination(currentTournament) {
 
 // СЛУЧАЙНЫЕ ЧП ПЕРЕД МАТЧЕМ (ИНЦИДЕНТЫ)
 function checkIncidentsBeforeMatch() {
+    if(!myTeam || myTeam.roster.length < TEAM_ROSTER_LIMIT) {
+        alert(`Для выхода на сервер у вас должно быть минимум ${TEAM_ROSTER_LIMIT} игроков в составе.`);
+        return;
+    }
+    if(!currentOpponentTeam || currentOpponentTeam.roster.length < TEAM_ROSTER_LIMIT) {
+        alert("Противник недостаточно укомплектован для матча. Подождите новое соперничество.");
+        return;
+    }
     let roll = Math.random();
     if(roll < 0.4) {
         // Происходит случайное событие
@@ -1727,6 +1868,14 @@ function banMap(mapName) {
 
 // ЗАПУСК И СИМУЛЯЦИЯ СЕРИИ МАТЧА
 function startMatchSeries() {
+    if(!myTeam || myTeam.roster.length < TEAM_ROSTER_LIMIT) {
+        alert(`Для старта серии у вас должно быть минимум ${TEAM_ROSTER_LIMIT} игроков.`);
+        return;
+    }
+    if(!currentOpponentTeam || currentOpponentTeam.roster.length < TEAM_ROSTER_LIMIT) {
+        alert("Противник не готов к матчу.");
+        return;
+    }
     seriesScoreA = 0;
     seriesScoreB = 0;
     currentMapIdx = 0;
@@ -1920,23 +2069,27 @@ function simulateMatchRound() {
 
 // СИСТЕМА РОСТА ИГРОКОВ ПО СКИЛУ И СТОИМОСТИ
 function calculatePlayerGrowthBonus(player, team, isWin) {
-    // Базовый рост: игроки в более слабых командах растут быстрее
-    let baseGrowth = isWin ? 1.5 : 0.3;
+    // Базовый рост: победы дают умеренный прирост, проигрыши почти не повышают скилл
+    let baseGrowth = isWin ? 1.0 : 0.1;
     
     // Коэффициент слабости команды (чем слабже команда, тем больше рост)
     let avgTeamSkill = team.roster.reduce((acc, p) => acc + p.skill, 0) / team.roster.length;
-    let teamWeakness = Math.max(0.5, (90 - avgTeamSkill) / 20);
+    let teamWeakness = Math.max(0.6, (95 - avgTeamSkill) / 25);
     
-    // Бонус за количество сыгранных матчей (опыт)
-    let experienceBonus = 1 + (player.matches * 0.02);
+    // Бонус за количество сыгранных матчей (опыт) — рост замедляется с опытом
+    let experienceBonus = 1 + Math.min(0.8, (player.matches * 0.008));
     
     // Бонус за роль (AWPer растет быстрее, Support медленнее)
-    let roleBonus = player.role === "AWPer" ? 1.2 : (player.role === "IGL" ? 1.0 : (player.role === "Support" ? 0.8 : 1.0));
+    let roleBonus = player.role === "AWPer" ? 1.1 : (player.role === "IGL" ? 0.95 : (player.role === "Support" ? 0.8 : 1.0));
     
     // Бонус за мораль (довольные игроки растут быстрее)
-    let moralBonus = 0.8 + (player.moral / 100) * 0.4;
+    let moralBonus = 0.85 + (player.moral / 100) * 0.2;
+
+    // Учитываем K/D: игроки с высоким K/D получают небольшой дополнительный рост
+    let kd = parseFloat(player.kd) || 1.0;
+    let kdBonus = 1 + Math.max(-0.2, Math.min(0.3, (kd - 1.0) * 0.5));
     
-    let finalGrowth = baseGrowth * teamWeakness * experienceBonus * roleBonus * moralBonus;
+    let finalGrowth = baseGrowth * teamWeakness * experienceBonus * roleBonus * moralBonus * kdBonus;
     return Math.round(finalGrowth * 10) / 10;
 }
 
@@ -1949,7 +2102,16 @@ function updatePlayerGrowth(team, isWin, mapCount = 1) {
         let skillBonus = calculatePlayerGrowthBonus(player, team, isWin);
         
         // Применяем рост скила (максимум 100)
-        let newSkill = Math.min(100, player.skill + skillBonus);
+        let tentativeSkill = player.skill + skillBonus;
+        // Если стартовый скилл не задан, запоминаем текущее значение
+        if(typeof player.startSkill === 'undefined') {
+            player.startSkill = player.skill;
+        }
+        // Ограничение прироста/падения за сезон: +/-2 от стартового скилла
+        let maxAllowed = player.startSkill + 2;
+        let minAllowed = player.startSkill - 2;
+        tentativeSkill = Math.min(maxAllowed, Math.max(minAllowed, tentativeSkill));
+        let newSkill = Math.min(100, Math.max(0, tentativeSkill));
         let skillIncrease = newSkill - player.skill;
         player.skill = newSkill;
         
@@ -1959,11 +2121,8 @@ function updatePlayerGrowth(team, isWin, mapCount = 1) {
             player.kd = Math.min(2.0, kdIncrease).toFixed(2);
         }
         
-        // Незначительный рост стоимости с каждым матчем
-        if(!player.price) {
-            player.price = Math.max(12000, Math.round(player.skill * 700 + (player.salary || 3000) * 8));
-        }
-        player.price = Math.round(player.price * (1 + skillIncrease * 0.015));
+        // Обновляем стоимость через новую формулу (10-20M диапазон)
+        player.price = getTransferOfferPrice(player);
     });
 }
 
@@ -2038,9 +2197,10 @@ function closeMatchAndOpenPress() {
             bracketMatches.semi1.winner = myTeam;
             bracketMatches.final.teamA = myTeam; // Проходим в финал
             
-            q.innerText = "Журналист HLTV: Поздравляем с чистой победой и выходом в финал! Что помогло вам забрать серию?";
-            opt.innerHTML += `<button onclick="finishPress(true, 'tactics')">«Наши тактики и заготовки сработали идеально»</button>`;
-            opt.innerHTML += `<button onclick="finishPress(true, 'hype')">«Мы просто жестче стреляем, у врагов не было шансов»</button>`;
+            // Динамическая генерация вопросов
+            let gen = generatePressQuestion(myTeam, currentOpponentTeam, true, seriesScoreA, seriesScoreB);
+            q.innerText = gen.question;
+            gen.options.forEach(o => opt.innerHTML += `<button onclick="finishPress(true, '${o.key}')">${o.text}</button>`);
         } else {
             // Выиграли финал
             bracketMatches.final.simulated = true;
@@ -2048,8 +2208,9 @@ function closeMatchAndOpenPress() {
             bracketMatches.final.scoreB = seriesScoreB;
             bracketMatches.final.winner = myTeam;
             
-            q.innerText = `Репортер: Невероятно! Вы чемпионы ${currentTournament.type} ${currentTournament.name}! Кубок ваш!`; 
-            opt.innerHTML += `<button onclick="finishPress(true, 'champion')">«Это заслуга всей команды и буткемпа. Мы вписали себя в историю!»</button>`;
+            let gen = generatePressQuestion(myTeam, currentOpponentTeam, true, seriesScoreA, seriesScoreB, true);
+            q.innerText = gen.question;
+            gen.options.forEach(o => opt.innerHTML += `<button onclick="finishPress(true, '${o.key}')">${o.text}</button>`);
         }
     } else {
         // Поражение
@@ -2068,23 +2229,55 @@ function closeMatchAndOpenPress() {
             q.innerText = `Репортер: Финал проигран. Победитель ${currentTournament.type} ${currentTournament.name}: ${bracketMatches.final.winner.name}. Какие выводы сделаете?`;
         }
         
-        opt.innerHTML += `<button onclick="finishPress(false, 'disband')">«Мы разберем ошибки, сделаем замены на рынке и вернемся сильнее»</button>`;
-        opt.innerHTML += `<button onclick="finishPress(false, 'blame')">«Игроки не выполнили установку на матч. Виноваты девайсы.»</button>`;
+        let gen = generatePressQuestion(myTeam, currentOpponentTeam, false, seriesScoreA, seriesScoreB);
+        gen.options.forEach(o => opt.innerHTML += `<button onclick="finishPress(false, '${o.key}')">${o.text}</button>`);
     }
+}
+
+function generatePressQuestion(team, opponent, win, scoreA, scoreB, isFinal=false) {
+    let top = team.roster.slice().sort((a,b)=> (parseFloat(b.kd)||1) - (parseFloat(a.kd)||1))[0];
+    let avgKD = calculateTeamAverageKD(team);
+    let question = '';
+    let options = [];
+
+    if(win) {
+        if(isFinal) {
+            question = `Репортер: Фантастика! Как вы оцениваете победу в финале против ${opponent.name}?`;
+            options = [
+                { key:'champion', text: '«Это заслуга всей команды и буткемпа. Мы вписали себя в историю!»' },
+                { key:'strategy', text: '«Мы отлично разобрали оппонента, тактика сработала безупречно.»' }
+            ];
+        } else {
+            question = `Журналист: Отличная игра. Кто был ключевым игроком в серии?`;
+            options = [
+                { key:'tactics', text: `«Наши заготовки и особенности подготовленной тактики помогли.»` },
+                { key:'hype', text: `«${top.name} выдал огромный матч — его импакт решал исходы.»` }
+            ];
+        }
+    } else {
+        question = `Журналист: Печальный исход. Что главное, что нужно исправить после матча?`;
+        options = [
+            { key:'disband', text: '«Разберем ошибки, сделаем замены и вернемся сильнее.»' },
+            { key:'blame', text: '«Технические проблемы и неверные решения на карте повлияли на результат.»' }
+        ];
+    }
+    return { question, options };
 }
 
 function finishPress(win, answerType) {
     let isSemi = !bracketMatches.semi1.simulated;
     let currentTournament = getCurrentTournament();
-    updatePlayerGrowth(myTeam, win, 0.5);
-    updatePlayerGrowth(currentOpponentTeam, !win, 0.5);
     updateMarketPricesAfterGrowth();
     
     if(win) {
         let cashPrize = 80000;
         if(!isSemi && answerType === 'champion') cashPrize = 250000;
         clubBalance += cashPrize;
-        myTeam.points += 150;
+        let hltvReward = Math.max(0, 150 - seasonState.hltvPointsGained);
+        if(hltvReward > 0) {
+            myTeam.points += hltvReward;
+            seasonState.hltvPointsGained += hltvReward;
+        }
         myTeam.roster.forEach(p => p.moral = Math.min(100, p.moral + 15));
         announcePlayerGrowth(myTeam);
         addTweet("HLTV News", `🏆 Интервью завершено. Менеджер ${myTeam.name} похвалил игроков. Организация забирает призовые!`);
@@ -2153,7 +2346,8 @@ function renderManagePanel() {
                 <div style="display:flex; gap:8px;">
                     <button onclick="changeSalary(${idx}, 500)" style="background:var(--green-money); color:#000; padding:6px 12px; font-size:11px;">+$500</button>
                     <button onclick="changeSalary(${idx}, -500)" style="background:var(--red-alert); padding:6px 12px; font-size:11px;">-$500</button>
-                    <button onclick="sellPlayer(${idx})" style="background:#444; padding:6px 12px; font-size:11px;">Продать</button>
+                    <button onclick="sellPlayer(${idx})" style="background:#444; padding:6px 12px; font-size:11px;">Продать на рынке</button>
+                    <button onclick="openSellToTeam(${idx})" style="background:#1b4; padding:6px 12px; font-size:11px;">Предложить команде</button>
                 </div>
             </div>
         `;
@@ -2237,6 +2431,337 @@ function sendChatMessage() {
 function generateExtendedAICommentary() {
     return "";
 }
+
+// ===== Переговоры при продаже игрока (малый чат с ИИ) =====
+let currentNegotiation = null;
+function openNegotiation(playerName, buyerName, price, buyerTeamId = null, playerIdx = null) {
+    currentNegotiation = { playerName, buyerName, price, lastOffer: price, buyerTeamId, playerIdx };
+    document.getElementById('neg-buyer').innerText = buyerName + ` предлагает $${price.toLocaleString()}`;
+    document.getElementById('neg-chat').innerHTML = `<div style="color:var(--text-muted); font-size:13px;">Покупатель: Мы готовы предложить $${price.toLocaleString()} за ${playerName}.</div>`;
+    document.getElementById('neg-offer-input').value = '';
+    document.getElementById('negotiation-modal').style.display = 'flex';
+}
+function closeNegotiation() {
+    document.getElementById('negotiation-modal').style.display = 'none';
+    currentNegotiation = null;
+}
+
+function sendNegotiationOffer() {
+    if(!currentNegotiation) return;
+    let v = document.getElementById('neg-offer-input').value.trim();
+    if(!v) return;
+    let offer = parseInt(v.replace(/[^0-9]/g, '')) || 0;
+    let chat = document.getElementById('neg-chat');
+    chat.innerHTML = `<div style="color:var(--accent-cyan);">Вы: $${offer.toLocaleString()}</div>` + chat.innerHTML;
+    document.getElementById('neg-offer-input').value = '';
+    // AI отвечает на предложение
+    setTimeout(() => aiNegotiateResponse(offer), 800 + Math.random()*800);
+}
+
+function aiNegotiateResponse(offer) {
+    if(!currentNegotiation) return;
+    let chat = document.getElementById('neg-chat');
+    let target = currentNegotiation.price;
+    // Простая логика: если предложение >= target => принимают, если ниже, предлагают контр
+    if(offer >= target) {
+        chat.innerHTML = `<div style="color:var(--accent-orange);">${currentNegotiation.buyerName}: Сделка принята. Подписываем документы.</div>` + chat.innerHTML;
+        currentNegotiation.lastOffer = offer;
+        // Завершим продажу
+        setTimeout(() => {
+            finalizeSale(currentNegotiation.playerName, currentNegotiation.buyerName, offer, currentNegotiation.buyerTeamId, currentNegotiation.playerIdx);
+            closeNegotiation();
+        }, 900);
+        return;
+    }
+
+    // ИИ делает встречное предложение, немного ниже изначальной цены
+    let counter = Math.max(Math.round(currentNegotiation.price * (0.8 + Math.random() * 0.15)), Math.round(offer * 1.05));
+    currentNegotiation.lastOffer = counter;
+    chat.innerHTML = `<div style="color:var(--text-muted);">${currentNegotiation.buyerName}: Мы можем поднять до $${counter.toLocaleString()}, но не больше.</div>` + chat.innerHTML;
+}
+
+function acceptNegotiation() {
+    if(!currentNegotiation) return;
+    finalizeSale(currentNegotiation.playerName, currentNegotiation.buyerName, currentNegotiation.lastOffer, currentNegotiation.buyerTeamId, currentNegotiation.playerIdx);
+    closeNegotiation();
+}
+
+let currentFreeAgentHire = null;
+function openFreeAgentSalaryNegotiation(tab, idx) {
+    let p = marketPlayers[tab][idx];
+    if(!p) return;
+    currentFreeAgentHire = { tab, idx, player: p, agreedSalary: p.salary || 30000 };
+    document.getElementById('free-agent-name').innerText = p.name;
+    document.getElementById('free-agent-salary-input').value = currentFreeAgentHire.agreedSalary;
+    document.getElementById('free-agent-chat').innerHTML = `<div style="color:var(--text-muted); font-size:13px;">Игрок ${p.name} готов обсуждать только зарплату. Начните с первого предложения.</div>`;
+    document.getElementById('free-agent-modal').style.display = 'flex';
+}
+
+function closeFreeAgentModal() {
+    document.getElementById('free-agent-modal').style.display = 'none';
+    currentFreeAgentHire = null;
+}
+
+function submitFreeAgentSalary() {
+    if(!currentFreeAgentHire) return;
+    let value = parseInt(document.getElementById('free-agent-salary-input').value.replace(/[^0-9]/g, '')) || 0;
+    if(value <= 0) {
+        alert('Введите корректную зарплату.');
+        return;
+    }
+    currentFreeAgentHire.agreedSalary = value;
+    let chat = document.getElementById('free-agent-chat');
+    chat.innerHTML = `<div style="color:var(--accent-cyan);">Вы: предлагаю зарплату $${value.toLocaleString()} в месяц.</div>` + chat.innerHTML;
+    setTimeout(() => freeAgentAIResponse(value), 700);
+}
+
+function freeAgentAIResponse(offer) {
+    if(!currentFreeAgentHire) return;
+    let player = currentFreeAgentHire.player;
+    let base = Math.max(10000, player.salary || 30000);
+    let expected = base + Math.round((player.skill - 70) * 250);
+    let chat = document.getElementById('free-agent-chat');
+    let response;
+    if(offer >= expected) {
+        response = `Игрок: Мне подходит. Готов подписать контракт за $${offer.toLocaleString()} в месяц.`;
+        currentFreeAgentHire.agreedSalary = offer;
+        currentFreeAgentHire.readyToSign = true;
+    } else {
+        let counter = Math.round(Math.max(expected, offer * 1.1));
+        response = `Игрок: Это слишком мало. Я бы хотел как минимум $${counter.toLocaleString()} в месяц.`;
+        currentFreeAgentHire.agreedSalary = counter;
+        currentFreeAgentHire.readyToSign = false;
+    }
+    chat.innerHTML = `<div style="color:var(--text-muted);">${response}</div>` + chat.innerHTML;
+}
+
+function acceptFreeAgentSalary() {
+    if(!currentFreeAgentHire) return;
+    let p = currentFreeAgentHire.player;
+    let idx = currentFreeAgentHire.idx;
+    let tab = currentFreeAgentHire.tab;
+    let salary = currentFreeAgentHire.agreedSalary || p.salary || 30000;
+    marketPlayers[tab].splice(idx, 1);
+    myTeam.roster.push({
+        name: p.name,
+        skill: p.skill,
+        moral: 90,
+        role: p.role,
+        matches: 0,
+        kd: "1.00",
+        salary: salary,
+        startSkill: p.skill,
+        startPrice: 0,
+        startKD: 1.00
+    });
+    myTeam.lastTransferTime = Date.now();
+    teamChemistry = Math.max(20, teamChemistry - 15);
+    addTweet("HLTV Transfer", `🔥 ${p.name} подписал контракт со ${myTeam.name} как свободный агент за $${salary.toLocaleString()} в месяц.`);
+    updateHUD();
+    renderMarket();
+    renderRoster();
+    renderManagePanel();
+    closeFreeAgentModal();
+}
+
+function finalizeSale(playerName, buyerName, price, buyerTeamId = null, playerIndex = null) {
+    if(!myTeam) return;
+    let playerIdx = null;
+    if(typeof playerIndex === 'number' && playerIndex >= 0 && playerIndex < myTeam.roster.length) {
+        let candidate = myTeam.roster[playerIndex];
+        if(candidate && candidate.name.trim() === playerName.trim()) {
+            playerIdx = playerIndex;
+        }
+    }
+    if(playerIdx === null) {
+        playerIdx = myTeam.roster.findIndex(p => p.name.trim() === playerName.trim());
+    }
+    if(playerIdx === -1 || playerIdx === null) return;
+    if(myTeam.roster.length <= MIN_ROSTER_SIZE) {
+        addTweet("CS2 News", `⚠️ Сделка по ${playerName} отменена: в составе должно оставаться минимум ${MIN_ROSTER_SIZE} игроков.`);
+        return;
+    }
+    let sold = myTeam.roster.splice(playerIdx, 1)[0];
+    if(buyerTeamId) {
+        let buyerTeam = teamsData.find(t => t.id === buyerTeamId);
+        if(buyerTeam && buyerTeam.roster.length < TEAM_ROSTER_LIMIT) {
+            buyerTeam.roster.push(sold);
+            addTweet("CS2 Transfers", `💰 ${sold.name} продан в ${buyerName} за $${price.toLocaleString()}. Он пополнил состав ${buyerName}.`);
+        } else {
+            addTweet("CS2 Transfers", `💰 ${sold.name} продан в ${buyerName} за $${price.toLocaleString()}.`);
+        }
+    } else {
+        addTweet("CS2 Transfers", `💰 ${sold.name} продан в ${buyerName} за $${price.toLocaleString()}.`);
+    }
+    clubBalance += price;
+    closeNegotiation();
+    renderRoster(); updateHUD(); renderMarket(); renderManagePanel();
+}
+
+// ===== Выбор команды для предложения игрока =====
+let currentSellContext = null;
+function openSellToTeam(playerIdx) {
+    if(!myTeam) return alert('Сначала выберите свою команду.');
+    currentSellContext = { playerIdx };
+    let p = myTeam.roster[playerIdx];
+    document.getElementById('sell-player-name').innerText = p ? p.name : '';
+    let list = document.getElementById('sell-to-team-list');
+    list.innerHTML = '';
+    let available = 0;
+
+    teamsData.forEach(t => {
+        if(!myTeam || t.id === myTeam.id) return;
+        if(t.roster.length >= TEAM_ROSTER_LIMIT) return;
+        available++;
+        let item = document.createElement('div');
+        item.style.display = 'flex';
+        item.style.alignItems = 'center';
+        item.style.justifyContent = 'space-between';
+        item.style.padding = '10px';
+        item.style.border = '1px solid var(--border-color)';
+        item.style.borderRadius = '12px';
+        item.style.cursor = 'pointer';
+        item.style.background = 'rgba(255,255,255,0.02)';
+        item.onmouseover = () => item.style.background = 'rgba(255,255,255,0.06)';
+        item.onmouseout = () => item.style.background = 'rgba(255,255,255,0.02)';
+        item.innerHTML = `
+            <div style="display:flex; gap:12px; align-items:center;">
+                <img src="${t.logo}" style="width:50px;height:50px;object-fit:contain;border-radius:10px; border:1px solid rgba(255,255,255,0.08);">
+                <div>
+                    <strong>${t.name}</strong>
+                    <div style="font-size:12px;color:var(--text-muted);">Состав: ${t.roster.length}/5 • Средний скилл ${Math.round(t.roster.reduce((sum, pl) => sum + pl.skill, 0) / t.roster.length)}</div>
+                </div>
+            </div>
+            <button style="padding:8px 14px; border-radius:10px; background:var(--accent-cyan); color:#000; border:none; cursor:pointer;">Начать переговоры</button>
+        `;
+        item.onclick = function(event) {
+            if(event.target.tagName.toLowerCase() === 'button') return; // обработаем кнопку отдельно
+            let player = myTeam.roster[playerIdx];
+            let price = getTransferOfferPrice(player);
+            closeSellToTeam();
+            openNegotiation(player.name, t.name, price, t.id);
+        };
+        item.querySelector('button').onclick = function(e) {
+            e.stopPropagation();
+            let player = myTeam.roster[playerIdx];
+            let price = getTransferOfferPrice(player);
+            closeSellToTeam();
+            openNegotiation(player.name, t.name, price, t.id);
+        };
+        list.appendChild(item);
+    });
+
+    if(available === 0) {
+        list.innerHTML = `<div style="color:var(--text-muted); font-size:14px; padding:12px;">Нет команд, готовых принять игрока. Попробуйте позже.</div>`;
+    }
+    document.getElementById('sell-to-team-modal').style.display = 'flex';
+}
+
+function closeSellToTeam() {
+    document.getElementById('sell-to-team-modal').style.display = 'none';
+    currentSellContext = null;
+}
+
+// ===== Team preview on hover and selection confirmation =====
+let teamPreviewTimer = null;
+function showTeamPreview(teamId, ev) {
+    clearTimeout(teamPreviewTimer);
+    let team = teamsData.find(t => t.id === teamId);
+    if(!team) return;
+    let popup = document.getElementById('team-preview-popup');
+    if(!popup) return;
+    // build content
+    let html = `<div class="team-preview-title">${team.name}</div><div class="team-preview-avatars">`;
+    team.roster.forEach(p => {
+        html += `<div title="${p.name}"><img src="${getPlayerAvatar(p.name)}" onerror="this.src='https://liquipedia.net/commons/images/a/a2/No_avatar.png'"></div>`;
+    });
+    html += `</div>`;
+    popup.innerHTML = html;
+    popup.style.display = 'block';
+    // position under the target element
+    let rect = (ev && ev.target && ev.target.closest('.team-select-card')) ? ev.target.closest('.team-select-card').getBoundingClientRect() : (ev ? {left: ev.clientX, bottom: ev.clientY} : {left:0,bottom:0});
+    let left = rect.left + window.scrollX;
+    // try center align
+    left = Math.max(12, left + (rect.width/2) - (popup.offsetWidth/2));
+    let top = rect.bottom + window.scrollY + 8;
+    popup.style.left = left + 'px';
+    popup.style.top = top + 'px';
+}
+function hideTeamPreview() {
+    teamPreviewTimer = setTimeout(() => {
+        let popup = document.getElementById('team-preview-popup');
+        if(popup) popup.style.display = 'none';
+    }, 120);
+}
+
+function confirmSelectTeam(teamId) {
+    let modal = document.getElementById('team-confirm-modal');
+    if(!modal) {
+        // fallback to immediate select
+        selectTeam(teamId);
+        return;
+    }
+    document.getElementById('confirm-team-name').innerText = teamsData.find(t=>t.id===teamId).name;
+    document.getElementById('confirm-yes-btn').onclick = function() { openProfileModal(teamId); };
+    document.getElementById('confirm-no-btn').onclick = function() { modal.style.display = 'none'; };
+    modal.style.display = 'flex';
+}
+
+function openProfileModal(teamId) {
+    document.getElementById('team-confirm-modal').style.display = 'none';
+    let modal = document.getElementById('create-profile-modal');
+    if(!modal) return;
+    document.getElementById('profile-firstname').value = '';
+    document.getElementById('profile-lastname').value = '';
+    document.getElementById('profile-age').value = '';
+    document.getElementById('profile-save-btn').onclick = function() { createProfileAndSelect(teamId); };
+    modal.style.display = 'flex';
+}
+
+function createProfileAndSelect(teamId) {
+    let first = document.getElementById('profile-firstname').value.trim();
+    let last = document.getElementById('profile-lastname').value.trim();
+    let age = parseInt(document.getElementById('profile-age').value.trim()) || 0;
+    if(!first || !last || age <= 0) { alert('Пожалуйста, заполните Имя, Фамилию и возраст корректно.'); return; }
+    // Save profile to global
+    window.myManagerProfile = { firstName: first, lastName: last, age: age };
+    document.getElementById('create-profile-modal').style.display = 'none';
+    // proceed to select team
+    selectTeam(teamId);
+}
+
 </script>
+
+<!-- Team preview popup -->
+<div id="team-preview-popup" class="team-preview-popup"></div>
+
+<!-- Confirm team selection modal -->
+<div id="team-confirm-modal" class="modal-overlay">
+    <div class="modal-box">
+        <h3 style="margin-top:0;">Вы уверены?</h3>
+        <p style="color:var(--text-muted); margin-bottom:12px;">Вы точно хотите играть за команду: <strong id="confirm-team-name"></strong> ?</p>
+        <div style="display:flex; gap:8px;">
+            <button id="confirm-yes-btn" style="flex:1; background:var(--accent-cyan); color:#000;">Да</button>
+            <button id="confirm-no-btn" style="flex:1; background:#222634;">Нет</button>
+        </div>
+    </div>
+</div>
+
+<!-- Profile creation modal -->
+<div id="create-profile-modal" class="modal-overlay">
+    <div class="modal-box">
+        <h3 style="margin-top:0;">Придумайте имя, фамилию и возраст</h3>
+        <div style="display:flex; flex-direction:column; gap:8px; margin-top:8px;">
+            <input id="profile-firstname" placeholder="Имя" style="padding:10px; border-radius:8px; background:var(--card-bg); border:1px solid var(--border-color); color:#fff;">
+            <input id="profile-lastname" placeholder="Фамилия" style="padding:10px; border-radius:8px; background:var(--card-bg); border:1px solid var(--border-color); color:#fff;">
+            <input id="profile-age" placeholder="Возраст" type="number" style="padding:10px; border-radius:8px; background:var(--card-bg); border:1px solid var(--border-color); color:#fff;">
+            <div style="display:flex; gap:8px; margin-top:8px;">
+                <button id="profile-save-btn" style="flex:1; background:var(--accent-cyan); color:#000;">Сохранить</button>
+                <button onclick="document.getElementById('create-profile-modal').style.display='none'" style="flex:1; background:#222634;">Отмена</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 </body>
 </html>
